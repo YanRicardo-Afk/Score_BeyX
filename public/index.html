@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Beyblade X - Batalha</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.5.4/socket.io.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- PLACAR PRINCIPAL -->
+    <div id="placar">
+        <div class="jogador" id="jogador1">
+            <div class="avatar">⚔️</div>
+            <div class="nome" id="nome1">Vex</div>
+            <div class="pontos" id="pontos1">0</div>
+        </div>
+        
+        <div class="vs">VS</div>
+        
+        <div class="jogador" id="jogador2">
+            <div class="avatar">🛡️</div>
+            <div class="nome" id="nome2">Knight</div>
+            <div class="pontos" id="pontos2">0</div>
+        </div>
+    </div>
+    
+    <!-- OVERLAY DE EFEITOS -->
+    <div id="overlay">
+        <div id="efeito-texto">BURST!</div>
+        <div id="efeito-vencedor"></div>
+    </div>
+    
+    <!-- STATUS DE CONEXÃO -->
+    <div id="status">🔌 Conectando ao servidor...</div>
+
+    <script>
+        // ============================================
+        // CONEXÃO COM O SERVIDOR
+        // ============================================
+        const socket = io();
+        const overlay = document.getElementById('overlay');
+        const efeitoTexto = document.getElementById('efeito-texto');
+        const efeitoVencedor = document.getElementById('efeito-vencedor');
+        const status = document.getElementById('status');
+        
+        socket.on('connect', () => {
+            status.innerHTML = '✅ Conectado!';
+            status.style.color = '#4caf50';
+            setTimeout(() => {
+                status.style.opacity = '0';
+            }, 2000);
+        });
+        
+        socket.on('estado-inicial', (estado) => {
+            document.getElementById('nome1').textContent = estado.player1Name;
+            document.getElementById('nome2').textContent = estado.player2Name;
+            document.getElementById('pontos1').textContent = estado.score1;
+            document.getElementById('pontos2').textContent = estado.score2;
+        });
+        
+        socket.on('atualizacao', (dados) => {
+            console.log('Tablet recebeu:', dados);
+            
+            // Atualiza placar com animação
+            if (dados.score1 !== undefined) {
+                atualizarPontos('pontos1', dados.score1);
+            }
+            if (dados.score2 !== undefined) {
+                atualizarPontos('pontos2', dados.score2);
+            }
+            
+            // Mostra efeito
+            if (dados.type === 'burst') {
+                mostrarEfeitoBurst(dados.winner);
+            } else if (dados.type === 'xtreme') {
+                mostrarEfeitoXtreme(dados.winner);
+            } else if (dados.type === 'over') {
+                mostrarEfeitoOver(dados.winner);
+            } else if (dados.type === 'spin') {
+                mostrarEfeitoSpin(dados.winner);
+            } else if (dados.type === 'reset') {
+                document.getElementById('pontos1').textContent = '0';
+                document.getElementById('pontos2').textContent = '0';
+            }
+        });
+        
+        // ============================================
+        // FUNÇÃO PARA ATUALIZAR PONTOS COM ANIMAÇÃO
+        // ============================================
+        function atualizarPontos(id, novoValor) {
+            const elemento = document.getElementById(id);
+            
+            // Pula o número
+            gsap.to(elemento, {
+                scale: 1.5,
+                color: '#ffffff',
+                duration: 0.15,
+                onComplete: () => {
+                    elemento.textContent = novoValor;
+                    gsap.fromTo(elemento,
+                        { scale: 0.5, color: '#ffd700' },
+                        { scale: 1, color: '#ffd700', duration: 0.3, ease: "back.out(2)" }
+                    );
+                }
+            });
+        }
+        
+        // ============================================
+        // EFEITO BURST - EXPLOSÃO
+        // ============================================
+        function mostrarEfeitoBurst(vencedor) {
+            const nomeVencedor = vencedor === 'player1' ? 
+                document.getElementById('nome1').textContent : 
+                document.getElementById('nome2').textContent;
+            
+            efeitoTexto.textContent = '💥 BURST FINISH!';
+            efeitoVencedor.textContent = `🏆 ${nomeVencedor} VENCEU! 🏆`;
+            
+            overlay.style.display = 'flex';
+            
+            const tl = gsap.timeline();
+            
+            // Flash branco
+            tl.to(overlay, {
+                backgroundColor: 'rgba(255,255,255,0.9)',
+                duration: 0.1
+            })
+            .to(overlay, {
+                backgroundColor: 'rgba(0,0,0,0.85)',
+                duration: 0.2
+            })
+            
+            // Tela treme
+            .to(overlay, {
+                x: 20,
+                y: -20,
+                rotation: 2,
+                duration: 0.08,
+                repeat: 8,
+                yoyo: true
+            })
+            
+            // Texto explode
+            .fromTo(efeitoTexto,
+                { scale: 0, opacity: 0, rotation: -15 },
+                { scale: 1.8, opacity: 1, rotation: 0, duration: 0.6, ease: "back.out(2)" }
+            )
+            
+            // Partículas douradas
+            .call(() => criarParticulas())
+            
+            // Nome do vencedor
+            .fromTo(efeitoVencedor,
+                { scale: 0, opacity: 0, y: 50 },
+                { scale: 1.2, opacity: 1, y: 0, duration: 0.4, ease: "back.out(1.7)" }
+            )
+            
+            // Espera e some
+            .to(efeitoTexto, {
+                scale: 1.5,
+                opacity: 0.8,
+                duration: 1
+            })
+            .to(efeitoVencedor, {
+                scale: 1,
+                opacity: 0.8,
+                duration: 1
+            }, "-=0.8")
+            
+            .call(() => {
+                overlay.style.display = 'none';
+                overlay.style.x = 0;
+                overlay.style.y = 0;
+                overlay.style.rotation = 0;
+                overlay.style.backgroundColor = 'rgba(0,0,0,0.85)';
+            });
+        }
+        
+        // ============================================
+        // EFEITO XTREME - FOGO
+        // ============================================
+        function mostrarEfeitoXtreme(vencedor) {
+            const nomeVencedor = vencedor === 'player1' ? 
+                document.getElementById('nome1').textContent : 
+                document.getElementById('nome2').textContent;
+            
+            efeitoTexto.textContent = '🔥 XTREME FINISH!';
+            efeitoVencedor.textContent = `🏆 ${nomeVencedor} VENCEU! 🏆`;
+            
+            overlay.style.display = 'flex';
+            
+            const tl = gsap.timeline();
+            
+            // Listras de velocidade
+            tl.call(() => criarListras())
+            
+            // Texto em chamas
+            .fromTo(efeitoTexto,
+                { scale: 3, opacity: 0, filter: 'blur(20px)' },
+                { scale: 1.8, opacity: 1, filter: 'blur(0px)', duration: 0.5, ease: "power3.out" }
+            )
+            
+            // Tremor intenso
+            .to(overlay, {
+                x: 30,
+                y: -30,
+                rotation: 3,
+                duration: 0.05,
+                repeat: 12,
+                yoyo: true
+            })
+            
+            .to(efeitoTexto, {
+                color: '#ff4400',
+                textShadow: '0 0 60px rgba(255,68,0,0.8), 0 0 120px rgba(255,68,0,0.4)',
+                duration: 0.5
+            })
+            
+            .fromTo(efeitoVencedor,
+                { scale: 0, opacity: 0, y: 50 },
+                { scale: 1.2, opacity: 1, y: 0, duration: 0.4, ease: "back.out(1.7)" }
+            )
+            
+            .to(efeitoTexto, {
+                scale: 1.2,
+                opacity: 0.6,
+                duration: 1
+            })
+            .to(efeitoVencedor, {
+                scale: 1,
+                opacity: 0.6,
+                duration: 1
+            }, "-=0.8")
+            
+            .call(() => {
+                overlay.style.display = 'none';
+                overlay.style.x = 0;
+                overlay.style.y = 0;
+                overlay.style.rotation = 0;
+                efeitoTexto.style.color = '#ffd700';
+                efeitoTexto.style.textShadow = '0 0 30px rgba(255,215,0,0.8), 0 0 60px rgba(255,215,0,0.5), 0 0 100px rgba(255,215,0,0.3)';
+            });
+        }
+        
+        // ============================================
+        // EFEITO OVER - EMPURRÃO
+        // ============================================
+        function mostrarEfeitoOver(vencedor) {
+            const nomeVencedor = vencedor === 'player1' ? 
+                document.getElementById('nome1').textContent : 
+                document.getElementById('nome2').textContent;
+            
+            efeitoTexto.textContent = '💨 OVER FINISH!';
+            efeitoVencedor.textContent = `🏆 ${nomeVencedor} VENCEU! 🏆`;
+            
+            overlay.style.display = 'flex';
+            
+            const tl = gsap.timeline();
+            
+            // Empurrão (tela vai pra trás)
+            tl.to(overlay, {
+                scale: 0.5,
+                opacity: 0.3,
+                duration: 0.2,
+                ease: "power2.in"
+            })
+            // Volta com força
+            .to(overlay, {
+                scale: 1,
+                opacity: 1,
+                duration: 0.3,
+                ease: "back.out(3)"
+            })
+            
+            // Texto aparece com vento
+            .fromTo(efeitoTexto,
+                { x: -200, opacity: 0, rotation: -10 },
+                { x: 0, opacity: 1, rotation: 0, duration: 0.6, ease: "power3.out" }
+            )
+            
+            // Ondas de vento
+            .call(() => criarOndas())
+            
+            .fromTo(efeitoVencedor,
+                { scale: 0, opacity: 0, y: 50 },
+                { scale: 1.2, opacity: 1, y: 0, duration: 0.4, ease: "back.out(1.7)" }
+            )
+            
+            .to(efeitoTexto, {
+                scale: 0.8,
+                opacity: 0.5,
+                duration: 0.8,
+                delay: 0.5
+            })
+            .to(efeitoVencedor, {
+                scale: 1,
+                opacity: 0.5,
+                duration: 0.8
+            }, "-=0.7")
+            
+            .call(() => {
+                overlay.style.display = 'none';
+                overlay.style.scale = 1;
+                overlay.style.opacity = 1;
+            });
+        }
+        
+        // ============================================
+        // EFEITO SPIN - CONTAGEM REGRESSIVA
+        // ============================================
+        function mostrarEfeitoSpin(vencedor) {
+            const nomeVencedor = vencedor === 'player1' ? 
+                document.getElementById('nome1').textContent : 
+                document.getElementById('nome2').textContent;
+            
+            overlay.style.display = 'flex';
+            efeitoVencedor.textContent = `🏆 ${nomeVencedor} VENCEU! 🏆`;
+            
+            const tl = gsap.timeline();
+            
+            // Contagem regressiva visual
+            const numeros = ['3', '2', '1', 'SPIN!'];
+            
+            numeros.forEach((num, index) => {
+                const el = document.createElement('div');
+                el.textContent = num;
+                el.style.cssText = `
+                    position: absolute;
+                    font-size: 120px;
+                    font-weight: 900;
+                    color: #4caf50;
+                    text-shadow: 0 0 50px rgba(76, 175, 80, 0.5);
+                    pointer-events: none;
+                    z-index: 1000;
+                `;
+                overlay.appendChild(el);
+                
+                if (index === 0) {
+                    tl.fromTo(el,
+                        { scale: 0, opacity: 0, rotation: -30 },
+                        { scale: 1.5, opacity: 1, rotation: 0, duration: 0.3, ease: "back.out(2)" }
+                    )
+                    .to(el, {
+                        scale: 0.5,
+                        opacity: 0,
+                        duration: 0.3,
+                        ease: "power1.in"
+                    })
+                    .call(() => el.remove(), [], "+=0.1");
+                } else {
+                    tl.fromTo(el,
+                        { scale: 0, opacity: 0, rotation: -30 },
+                        { scale: 1.5, opacity: 1, rotation: 0, duration: 0.3, ease: "back.out(2)" }
+                    )
+                    .to(el, {
+                        scale: 0.5,
+                        opacity: 0,
+                        duration: 0.3,
+                        ease: "power1.in"
+                    })
+                    .call(() => el.remove(), [], "+=0.1");
+                }
+            });
+            
+            // Texto final
+            tl.fromTo(efeitoTexto,
+                { scale: 0, opacity: 0, rotation: 20 },
+                { scale: 1.8, opacity: 1, rotation: 0, duration: 0.6, ease: "back.out(2)" }
+            )
+            .fromTo(efeitoVencedor,
+                { scale: 0, opacity: 0, y: 50 },
+                { scale: 1.2, opacity: 1, y: 0, duration: 0.4, ease: "back.out(1.7)" }
+            )
+            .to(efeitoTexto, {
+                scale: 1.2,
+                opacity: 0.6,
+                duration: 0.8
+            })
+            .to(efeitoVencedor, {
+                scale: 1,
+                opacity: 0.6,
+                duration: 0.8
+            }, "-=0.7")
+            .call(() => {
+                overlay.style.display = 'none';
+                efeitoTexto.textContent = 'BURST!';
+            });
+        }
+        
+        // ============================================
+        // FUNÇÕES AUXILIARES (Partículas, Listras, Ondas)
+        // ============================================
+        
+        function criarParticulas() {
+            const container = document.getElementById('overlay');
+            const emojis = ['✦', '✧', '⭐', '✨', '💫'];
+            
+            for (let i = 0; i < 30; i++) {
+                const particula = document.createElement('div');
+                particula.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+                particula.style.cssText = `
+                    position: absolute;
+                    font-size: ${20 + Math.random() * 40}px;
+                    color: #ffd700;
+                    left: ${Math.random() * 100}%;
+                    top: ${Math.random() * 100}%;
+                    opacity: 1;
+                    pointer-events: none;
+                    z-index: 1001;
+                `;
+                container.appendChild(particula);
+                
+                gsap.to(particula, {
+                    x: (Math.random() - 0.5) * 600,
+                    y: (Math.random() - 0.5) * 600,
+                    rotation: Math.random() * 720,
+                    scale: 0,
+                    opacity: 0,
+                    duration: 1 + Math.random(),
+                    ease: "power2.out",
+                    onComplete: () => particula.remove()
+                });
+            }
+        }
+        
+        function criarListras() {
+            const container = document.getElementById('overlay');
+            for (let i = 0; i < 20; i++) {
+                const listra = document.createElement('div');
+                listra.style.cssText = `
+                    position: absolute;
+                    height: 3px;
+                    width: ${100 + Math.random() * 200}px;
+                    background: linear-gradient(90deg, transparent, #ff4400, transparent);
+                    top: ${Math.random() * 100}%;
+                    left: -${Math.random() * 100}%;
+                    opacity: 0.8;
+                    border-radius: 2px;
+                    pointer-events: none;
+                    z-index: 1001;
+                `;
+                container.appendChild(listra);
+                
+                gsap.to(listra, {
+                    x: window.innerWidth + 200,
+                    duration: 0.5 + Math.random() * 0.5,
+                    ease: "power2.in",
+                    onComplete: () => listra.remove()
+                });
+            }
+        }
+        
+        function criarOndas() {
+            const container = document.getElementById('overlay');
+            for (let i = 0; i < 8; i++) {
+                const onda = document.createElement('div');
+                onda.style.cssText = `
+                    position: absolute;
+                    width: 200px;
+                    height: 10px;
+                    border: 3px solid rgba(0, 188, 212, 0.3);
+                    border-radius: 50%;
+                    top: ${Math.random() * 100}%;
+                    left: ${Math.random() * 100}%;
+                    pointer-events: none;
+                    z-index: 1001;
+                `;
+                container.appendChild(onda);
+                
+                gsap.to(onda, {
+                    scale: 10,
+                    opacity: 0,
+                    duration: 1 + Math.random(),
+                    ease: "power2.out",
+                    onComplete: () => onda.remove()
+                });
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,259 @@
+/* ===== FUNDO E GERAL ===== */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background: linear-gradient(135deg, #0a0a2e, #1a0a2e, #0a0a2e);
+    background-size: 400% 400%;
+    animation: gradienteFundo 8s ease infinite;
+    font-family: 'Arial', sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    overflow: hidden;
+    margin: 0;
+}
+
+/* Fundo com estrelas */
+body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: 
+        radial-gradient(2px 2px at 20px 30px, #eee, transparent),
+        radial-gradient(2px 2px at 40px 70px, rgba(255,255,255,0.8), transparent),
+        radial-gradient(2px 2px at 50px 160px, #ddd, transparent),
+        radial-gradient(2px 2px at 90px 40px, rgba(255,255,255,0.6), transparent),
+        radial-gradient(2px 2px at 130px 80px, #fff, transparent);
+    background-size: 200px 200px;
+    opacity: 0.5;
+    pointer-events: none;
+    z-index: 0;
+}
+
+@keyframes gradienteFundo {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+/* ===== PLACAR ===== */
+#placar {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 60px;
+    background: rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(10px);
+    padding: 50px 80px;
+    border-radius: 25px;
+    border: 2px solid rgba(255, 215, 0, 0.3);
+    box-shadow: 
+        0 0 30px rgba(255, 215, 0, 0.1),
+        inset 0 0 30px rgba(255, 215, 0, 0.05),
+        0 0 60px rgba(255, 215, 0, 0.05);
+    position: relative;
+    z-index: 1;
+}
+
+/* Borda com brilho pulsante */
+#placar::before {
+    content: '';
+    position: absolute;
+    top: -2px;
+    left: -2px;
+    right: -2px;
+    bottom: -2px;
+    background: linear-gradient(45deg, #ffd700, #ff6b00, #ffd700, #ff6b00);
+    background-size: 400% 400%;
+    border-radius: 27px;
+    z-index: -1;
+    animation: brilhoBorda 3s ease infinite;
+    opacity: 0.6;
+}
+
+@keyframes brilhoBorda {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+/* ===== JOGADORES ===== */
+.jogador {
+    text-align: center;
+    min-width: 150px;
+}
+
+.avatar {
+    font-size: 56px;
+    margin-bottom: 10px;
+    display: inline-block;
+    animation: avatarGirar 8s linear infinite;
+    filter: drop-shadow(0 0 20px rgba(255, 215, 0, 0.3));
+}
+
+@keyframes avatarGirar {
+    0% { transform: rotate(0deg) scale(1); }
+    50% { transform: rotate(180deg) scale(1.1); }
+    100% { transform: rotate(360deg) scale(1); }
+}
+
+.nome {
+    font-size: 32px;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 3px;
+    margin-bottom: 10px;
+}
+
+#jogador1 .nome {
+    color: #4fc3f7;
+    text-shadow: 
+        0 0 10px rgba(79, 195, 247, 0.5),
+        0 0 20px rgba(79, 195, 247, 0.3),
+        0 0 40px rgba(79, 195, 247, 0.1);
+}
+
+#jogador2 .nome {
+    color: #ef5350;
+    text-shadow: 
+        0 0 10px rgba(239, 83, 80, 0.5),
+        0 0 20px rgba(239, 83, 80, 0.3),
+        0 0 40px rgba(239, 83, 80, 0.1);
+}
+
+.pontos {
+    font-size: 80px;
+    font-weight: 900;
+    color: #ffd700;
+    text-shadow: 
+        0 0 10px rgba(255, 215, 0, 0.8),
+        0 0 20px rgba(255, 215, 0, 0.5),
+        0 0 40px rgba(255, 215, 0, 0.3),
+        0 0 80px rgba(255, 215, 0, 0.1);
+    transition: all 0.3s ease;
+}
+
+/* ===== VS ===== */
+.vs {
+    font-size: 36px;
+    font-weight: 900;
+    color: transparent;
+    background: linear-gradient(45deg, #ffd700, #ff6b00, #ffd700);
+    background-size: 200% 200%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    animation: vsPulsar 2s ease infinite;
+    position: relative;
+}
+
+.vs::after {
+    content: '⚡';
+    position: absolute;
+    font-size: 50px;
+    top: -30px;
+    left: 50%;
+    transform: translateX(-50%);
+    animation: raioPiscar 0.8s ease infinite;
+}
+
+@keyframes vsPulsar {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+}
+
+@keyframes raioPiscar {
+    0%, 100% { opacity: 1; transform: translateX(-50%) scale(1); }
+    50% { opacity: 0.3; transform: translateX(-50%) scale(1.3); }
+}
+
+/* ===== OVERLAY DE EFEITOS ===== */
+#overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    z-index: 999;
+    pointer-events: none;
+}
+
+#efeito-texto {
+    font-size: 80px;
+    font-weight: 900;
+    color: #ffd700;
+    text-shadow: 
+        0 0 30px rgba(255, 215, 0, 0.8),
+        0 0 60px rgba(255, 215, 0, 0.5),
+        0 0 100px rgba(255, 215, 0, 0.3);
+    letter-spacing: 5px;
+    text-align: center;
+}
+
+#efeito-vencedor {
+    font-size: 48px;
+    font-weight: 900;
+    color: #fff;
+    margin-top: 20px;
+    text-shadow: 0 0 30px rgba(255, 255, 255, 0.3);
+}
+
+/* ===== STATUS ===== */
+#status {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    color: #666;
+    font-size: 14px;
+    background: rgba(0, 0, 0, 0.8);
+    padding: 10px 20px;
+    border-radius: 10px;
+    border: 1px solid #333;
+    z-index: 1000;
+    transition: opacity 0.5s;
+}
+
+/* ===== RESPONSIVO ===== */
+@media (max-width: 768px) {
+    #placar {
+        padding: 30px 40px;
+        gap: 30px;
+        flex-direction: column;
+    }
+    
+    .jogador {
+        min-width: 100px;
+    }
+    
+    .pontos {
+        font-size: 48px;
+    }
+    
+    .nome {
+        font-size: 22px;
+    }
+    
+    .vs {
+        font-size: 20px;
+    }
+    
+    #efeito-texto {
+        font-size: 40px;
+    }
+    
+    #efeito-vencedor {
+        font-size: 28px;
+    }
+}
