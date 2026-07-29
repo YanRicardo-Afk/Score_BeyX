@@ -1,82 +1,67 @@
-const express = require('express');
-const app = express();
-const http = require('http').createServer(app);
-const io = require('socket.io')(http);
-const os = require('os');
+const Bey = require("./src/domain/Bey");
+const Player = require("./src/domain/Player");
+const Battle = require("./src/domain/Battle");
+const Finish = require("./src/domain/Finish");
+const FinishTypes = require("./src/shared/enums/FinishTypes");
 
-// Serve os arquivos da pasta public
-app.use(express.static('public'));
 
-// Estado do jogo
-let gameState = {
-    score1: 0,
-    score2: 0,
-    player1Name: 'Vex',
-    player2Name: 'Knight'
-};
-
-// Quando alguém conecta
-io.on('connection', (socket) => {
-    console.log('📱 Dispositivo conectado:', socket.id);
-    
-    // Envia o estado atual para quem conectou
-    socket.emit('estado-inicial', gameState);
-    
-    // Recebe comandos do celular
-    socket.on('comando', (dados) => {
-        console.log('⚡ Comando recebido:', dados);
-        
-        // Processa o comando
-        if (dados.type === 'burst') {
-            // Atualiza o placar
-            if (dados.winner === 'player1') {
-                gameState.score1++;
-            } else if (dados.winner === 'player2') {
-                gameState.score2++;
-            }
-        }
-        
-        // Envia para TODOS os dispositivos (tablet e celular)
-        io.emit('atualizacao', {
-            ...dados,
-            score1: gameState.score1,
-            score2: gameState.score2
-        });
-    });
-    
-    // Quando desconecta
-    socket.on('disconnect', () => {
-        console.log('📱 Dispositivo desconectado');
-    });
+const dranSword = new Bey({
+    id: "dran-sword",
+    name: "Dran Sword",
+    color: "#2F80ED"
 });
 
-// Função para pegar IPs da rede
-function getLocalIPs() {
-    const interfaces = os.networkInterfaces();
-    const ips = [];
-    for (let name in interfaces) {
-        for (let iface of interfaces[name]) {
-            if (iface.family === 'IPv4' && !iface.internal) {
-                ips.push(iface.address);
-            }
-        }
-    }
-    return ips;
-}
-
-// Inicia o servidor
-const PORT = 3000;
-http.listen(PORT, '0.0.0.0', () => {
-    console.log('\n🚀 SERVIDOR INICIADO!\n');
-    console.log('📺 Tablet (Interface):');
-    console.log(`   http://localhost:${PORT}`);
-    console.log('\n📱 Celular (Controle):');
-    const ips = getLocalIPs();
-    ips.forEach(ip => {
-        console.log(`   http://${ip}:${PORT}/controller.html`);
-    });
-    console.log('\n⚠️  ATENÇÃO:');
-    console.log('   - O tablet DEVE estar na mesma rede Wi-Fi que o PC');
-    console.log('   - O celular DEVE estar na mesma rede Wi-Fi que o PC');
-    console.log('   - Use o IP que aparece acima para acessar no celular\n');
+const wizardArrow = new Bey({
+    id: "wizard-arrow",
+    name: "Wizard Arrow",
+    color: "#F2C94C"
 });
+
+const yan = new Player({
+    id: "player-1",
+    name: "Yan",
+    bey: dranSword
+});
+
+const pedro = new Player({
+    id: "player-2",
+    name: "Pedro",
+    bey: wizardArrow
+});
+
+const battle = new Battle({
+    id: "battle-1",
+    player1: yan,
+    player2: pedro
+});
+
+battle.start();
+
+const firstFinish = new Finish({
+    type: FinishTypes.BURST,
+    winnerId: yan.id,
+    round: battle.round
+});
+
+battle.registerFinish(firstFinish);
+
+console.log("\nDepois da primeira rodada:");
+console.log("Placar Yan:", battle.player1Score);
+console.log("Status:", battle.status);
+console.log("Rodada:", battle.round);
+
+const secondFinish = new Finish({
+    type: FinishTypes.BURST,
+    winnerId: yan.id,
+    round: battle.round
+});
+
+battle.registerFinish(secondFinish);
+
+console.log("\nDepois da segunda rodada:");
+console.log("Placar Yan:", battle.player1Score);
+console.log("Status:", battle.status);
+console.log("Vencedor:", battle.winner.name);
+console.log("Rodada:", battle.round);
+console.log("Histórico:", battle.history.length);
+
