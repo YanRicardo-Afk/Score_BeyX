@@ -1,7 +1,8 @@
 const Player = require("./Player");
 const Finish = require("./Finish");
-const BattleStatus = require("../shared/enums/BattleStatus");
+
 const Rules = require("../config/Rules");
+const BattleStatus = require("../shared/enums/BattleStatus");
 
 class Battle {
     constructor({
@@ -57,70 +58,116 @@ class Battle {
     }
 
     registerFinish(finish) {
-    if (this.status !== BattleStatus.RUNNING) {
-        throw new Error(
-            "Só é possível registrar uma finalização durante uma batalha em andamento."
-        );
+        this.validateFinish(finish);
+
+        const winner = this.getPlayerById(finish.winnerId);
+
+        this.processFinish(winner, finish);
     }
 
-    if (!(finish instanceof Finish)) {
-        throw new Error(
-            "A batalha precisa receber uma instância de Finish."
-        );
+    validateFinish(finish) {
+        if (this.status !== BattleStatus.RUNNING) {
+            throw new Error(
+                "Só é possível registrar uma finalização durante uma batalha em andamento."
+            );
+        }
+
+        if (!(finish instanceof Finish)) {
+            throw new Error(
+                "A batalha precisa receber uma instância de Finish."
+            );
+        }
+
+        const winner = this.getPlayerById(finish.winnerId);
+
+        if (!winner) {
+            throw new Error(
+                "O vencedor da finalização não participa desta batalha."
+            );
+        }
+
+        if (finish.round !== this.round) {
+            throw new Error(
+                "A rodada da finalização não corresponde à rodada atual."
+            );
+        }
     }
 
-    const winner = this.getPlayerById(finish.winnerId);
+    processFinish(winner, finish) {
+        this.addPoints(winner, finish.points);
+        this.history.push(finish);
 
-    if (!winner) {
-        throw new Error(
-            "O vencedor da finalização não participa desta batalha."
-        );
+        if (this.hasWinner(winner)) {
+            this.finish(winner);
+            return;
+        }
+
+        this.round += 1;
     }
 
-    if (finish.round !== this.round) {
-        throw new Error(
-            "A rodada da finalização não corresponde à rodada atual."
-        );
-    }
-
-    this.addPoints(winner, finish.points);
-
-    this.history.push(finish);
-
-    if (this.hasWinner(winner)) {
-        this.finish(winner);
-        return;
-    }
-
-    this.round += 1;
-}
     getPlayerById(playerId) {
-    if (this.player1.id === playerId) {
-        return this.player1;
+        if (this.player1.id === playerId) {
+            return this.player1;
+        }
+
+        if (this.player2.id === playerId) {
+            return this.player2;
+        }
+
+        return null;
     }
 
-    if (this.player2.id === playerId) {
-        return this.player2;
+    getScore(player) {
+        if (player === this.player1) {
+            return this.player1Score;
+        }
+
+        if (player === this.player2) {
+            return this.player2Score;
+        }
+
+        throw new Error(
+            "Não é possível consultar a pontuação de um jogador que não participa da batalha."
+        );
     }
 
-    return null;
-}
+    setScore(player, score) {
+        if (!Number.isInteger(score) || score < 0) {
+            throw new Error(
+                "A pontuação precisa ser um número inteiro maior ou igual a zero."
+            );
+        }
+
+        if (player === this.player1) {
+            this.player1Score = score;
+            return;
+        }
+
+        if (player === this.player2) {
+            this.player2Score = score;
+            return;
+        }
+
+        throw new Error(
+            "Não é possível alterar a pontuação de um jogador que não participa da batalha."
+        );
+    }
 
     addPoints(player, points) {
-    if (player === this.player1) {
-        this.player1Score += points;
-        return;
+        if (!Number.isInteger(points) || points <= 0) {
+            throw new Error(
+                "A quantidade de pontos precisa ser um número inteiro positivo."
+            );
+        }
+
+        const currentScore = this.getScore(player);
+
+        this.setScore(player, currentScore + points);
     }
 
-    if (player === this.player2) {
-        this.player2Score += points;
-        return;
+    hasWinner(player) {
+        return this.getScore(player) >= Rules.WIN_SCORE;
     }
-
-    throw new Error(
-        "Não é possível adicionar pontos a um jogador que não participa da batalha."
-    );
-}
 
     finish(winner) {
         if (this.status !== BattleStatus.RUNNING) {
@@ -143,8 +190,8 @@ class Battle {
     }
 
     reset() {
-        this.player1Score = 0;
-        this.player2Score = 0;
+        this.setScore(this.player1, 0);
+        this.setScore(this.player2, 0);
 
         this.round = 1;
         this.history = [];
@@ -152,19 +199,6 @@ class Battle {
         this.winner = null;
         this.status = BattleStatus.WAITING;
     }
-    hasWinner(player) {
-    if (player === this.player1) {
-        return this.player1Score >= Rules.WIN_SCORE;
-    }
-
-    if (player === this.player2) {
-        return this.player2Score >= Rules.WIN_SCORE;
-    }
-
-    return false;
-}
 }
 
 module.exports = Battle;
-
-

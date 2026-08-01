@@ -1,67 +1,56 @@
-const Bey = require("./src/domain/Bey");
-const Player = require("./src/domain/Player");
-const Battle = require("./src/domain/Battle");
-const Finish = require("./src/domain/Finish");
-const FinishTypes = require("./src/shared/enums/FinishTypes");
+const App = require("./src/core/App");
 
+const PORT = Number(process.env.PORT) || 3000;
 
-const dranSword = new Bey({
-    id: "dran-sword",
-    name: "Dran Sword",
-    color: "#2F80ED"
+const app = new App({
+    port: PORT
 });
 
-const wizardArrow = new Bey({
-    id: "wizard-arrow",
-    name: "Wizard Arrow",
-    color: "#F2C94C"
-});
+async function bootstrap() {
+    try {
+        await app.start();
 
-const yan = new Player({
-    id: "player-1",
-    name: "Yan",
-    bey: dranSword
-});
+        console.log(
+            `Servidor iniciado em http://localhost:${PORT}`
+        );
 
-const pedro = new Player({
-    id: "player-2",
-    name: "Pedro",
-    bey: wizardArrow
-});
+        console.log(
+            `Controller: http://localhost:${PORT}/controller`
+        );
 
-const battle = new Battle({
-    id: "battle-1",
-    player1: yan,
-    player2: pedro
-});
+        console.log(
+            `Health check: http://localhost:${PORT}/health`
+        );
+    } catch (error) {
+        console.error(
+            "Não foi possível iniciar a aplicação:",
+            error
+        );
 
-battle.start();
+        process.exit(1);
+    }
+}
 
-const firstFinish = new Finish({
-    type: FinishTypes.BURST,
-    winnerId: yan.id,
-    round: battle.round
-});
+async function shutdown(signal) {
+    console.log(`\nEncerrando aplicação (${signal})...`);
 
-battle.registerFinish(firstFinish);
+    try {
+        if (app.isStarted()) {
+            await app.stop();
+        }
 
-console.log("\nDepois da primeira rodada:");
-console.log("Placar Yan:", battle.player1Score);
-console.log("Status:", battle.status);
-console.log("Rodada:", battle.round);
+        process.exit(0);
+    } catch (error) {
+        console.error(
+            "Erro ao encerrar a aplicação:",
+            error
+        );
 
-const secondFinish = new Finish({
-    type: FinishTypes.BURST,
-    winnerId: yan.id,
-    round: battle.round
-});
+        process.exit(1);
+    }
+}
 
-battle.registerFinish(secondFinish);
+process.on("SIGINT", () => shutdown("SIGINT"));
+process.on("SIGTERM", () => shutdown("SIGTERM"));
 
-console.log("\nDepois da segunda rodada:");
-console.log("Placar Yan:", battle.player1Score);
-console.log("Status:", battle.status);
-console.log("Vencedor:", battle.winner.name);
-console.log("Rodada:", battle.round);
-console.log("Histórico:", battle.history.length);
-
+bootstrap();
