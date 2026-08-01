@@ -6,12 +6,43 @@
         name="viewport"
         content="width=device-width, initial-scale=1.0"
     >
-    <title>Beyblade Overlay Engine</title>
+    <title>Placar - Beyblade Overlay</title>
 </head>
 <body>
     <main>
-        <h1>Beyblade Overlay Engine</h1>
-        <p>Tela do placar carregada com sucesso.</p>
+        <p id="connection-status">Conectando...</p>
+
+        <section>
+            <article>
+                <h2 id="player1-name">Jogador 1</h2>
+                <p id="player1-bey">Bey 1</p>
+                <strong id="player1-score">0</strong>
+            </article>
+
+            <p>VS</p>
+
+            <article>
+                <h2 id="player2-name">Jogador 2</h2>
+                <p id="player2-bey">Bey 2</p>
+                <strong id="player2-score">0</strong>
+            </article>
+        </section>
+
+        <p>
+            Estado:
+            <span id="battle-status">waiting</span>
+        </p>
+
+        <p>
+            Rodada:
+            <span id="battle-round">1</span>
+        </p>
+
+        <p id="finish-message"></p>
+        <h2 id="winner-message"></h2>
     </main>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="/scoreboard/scoreboard.js"></script>
 </body>
 </html>

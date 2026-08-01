@@ -4,14 +4,70 @@
     <meta charset="UTF-8">
     <meta
         name="viewport"
-        content="width=device-width, initial-scale=1.0"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0"
     >
     <title>Controller - Beyblade Overlay</title>
 </head>
 <body>
     <main>
         <h1>Controller</h1>
-        <p>Interface do celular carregada com sucesso.</p>
+
+        <p id="connection-status">Conectando...</p>
+        <p id="command-feedback"></p>
+
+        <section>
+            <button id="start-battle" type="button">
+                Iniciar batalha
+            </button>
+
+            <button id="reset-battle" type="button">
+                Reiniciar batalha
+            </button>
+        </section>
+
+        <fieldset>
+            <legend>Vencedor da rodada</legend>
+
+            <label>
+                <input
+                    type="radio"
+                    name="winner"
+                    value="player-1"
+                    checked
+                >
+                Jogador 1
+            </label>
+
+            <label>
+                <input
+                    type="radio"
+                    name="winner"
+                    value="player-2"
+                >
+                Jogador 2
+            </label>
+        </fieldset>
+
+        <section>
+            <button data-finish="spin" type="button">
+                Spin Finish (+1)
+            </button>
+
+            <button data-finish="over" type="button">
+                Over Finish (+2)
+            </button>
+
+            <button data-finish="burst" type="button">
+                Burst Finish (+2)
+            </button>
+
+            <button data-finish="xtreme" type="button">
+                Xtreme Finish (+3)
+            </button>
+        </section>
     </main>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="/controller/controller.js"></script>
 </body>
 </html>
