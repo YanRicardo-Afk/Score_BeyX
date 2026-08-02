@@ -1,0 +1,1 @@
+A pasta design contém toda a documentação visual do Score_BeyX, incluindo wireframes, estudos de interface, identidade visual, inspirações e documentação de cada tema.

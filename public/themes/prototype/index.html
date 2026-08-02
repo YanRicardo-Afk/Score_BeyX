@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Prototype HUD - Score BeyX</title>
+
+    <link
+        rel="stylesheet"
+        href="/themes/prototype/prototype.css"
+    >
+</head>
+
+<body>
+    <div class="tech-background" aria-hidden="true">
+        <div id="tech-shapes" class="tech-shapes"></div>
+        <div class="tech-grid"></div>
+        <div class="screen-vignette"></div>
+    </div>
+
+    <main id="prototype-hud" class="prototype-hud">
+        <p id="connection-status" class="connection-status">
+            Conectando...
+        </p>
+
+        <section class="battle-stage">
+            <article
+                id="player1-card"
+                class="player-card player-card-left"
+            >
+                <h2 id="player1-bey-name" class="bey-name">
+                    Dran Sword
+                </h2>
+
+                <div class="bey-frame">
+                    <img
+                        id="player1-bey-image"
+                        class="bey-image"
+                        src="/themes/prototype/assets/images/player1-bey.png"
+                        alt="Bey do Jogador 1"
+                    >
+
+                    <div class="bey-fallback">
+                        BEY 1
+                    </div>
+                </div>
+            </article>
+
+            <section class="score-center" aria-label="Placar">
+                <div class="score-line">
+                    <span
+                        id="player1-score"
+                        class="score-number"
+                    >
+                        0
+                    </span>
+
+                    <span class="score-divider">-</span>
+
+                    <span
+                        id="player2-score"
+                        class="score-number"
+                    >
+                        0
+                    </span>
+                </div>
+
+                <p class="round-label">
+                    ROUND
+                    <span id="battle-round">1</span>
+                </p>
+            </section>
+
+            <article
+                id="player2-card"
+                class="player-card player-card-right"
+            >
+                <h2 id="player2-bey-name" class="bey-name">
+                    Wizard Arrow
+                </h2>
+
+                <div class="bey-frame">
+                    <img
+                        id="player2-bey-image"
+                        class="bey-image"
+                        src="/themes/prototype/assets/images/player2-bey.png"
+                        alt="Bey do Jogador 2"
+                    >
+
+                    <div class="bey-fallback">
+                        BEY 2
+                    </div>
+                </div>
+            </article>
+        </section>
+
+        <section
+            id="finish-overlay"
+            class="event-overlay"
+            aria-live="polite"
+        >
+            <div class="event-backdrop"></div>
+
+            <div class="finish-banner">
+                <span id="finish-title">BURST FINISH</span>
+            </div>
+        </section>
+
+        <section
+            id="winner-overlay"
+            class="winner-overlay"
+            aria-live="polite"
+        >
+            <div class="winner-glow"></div>
+
+            <img
+                id="winner-background-image"
+                class="winner-background-image"
+                src=""
+                alt=""
+            >
+
+            <img
+                id="winner-bey-image"
+                class="winner-bey-image"
+                src=""
+                alt=""
+            >
+
+            <div class="winner-copy">
+                <p class="winner-label">WINNER</p>
+
+                <h2 id="winner-bey-name">
+                    Bey vencedor
+                </h2>
+            </div>
+        </section>
+    </main>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="/themes/prototype/prototype.js"></script>
+</body>
+</html>

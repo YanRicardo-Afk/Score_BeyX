@@ -52,6 +52,20 @@ class HttpServer {
             );
         });
 
+        this.expressApp.get(
+            "/themes/prototype",
+            (request, response) => {
+                response.sendFile(
+                    path.join(
+                        this.publicPath,
+                        "themes",
+                        "prototype",
+                        "index.html"
+                    )
+                );
+            }
+        );
+
         this.expressApp.get("/health", (request, response) => {
             response.json({
                 status: "ok",
