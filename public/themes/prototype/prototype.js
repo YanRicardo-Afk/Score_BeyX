@@ -37,6 +37,16 @@ const elements = {
     player2BeyImage:
         document.getElementById("player2-bey-image"),
 
+    player1Fallback:
+        document.querySelector(
+            "#player1-card .bey-fallback"
+        ),
+
+    player2Fallback:
+        document.querySelector(
+            "#player2-card .bey-fallback"
+        ),
+
     player1Score:
         document.getElementById("player1-score"),
 
@@ -107,6 +117,32 @@ const timeline = new ThemeTimeline({
     winnerDelay: 320
 });
 
+const player1ScoreCounter = new ScoreCounter({
+    element: elements.player1Score,
+    animationDuration:
+        state.scoreAnimationDuration
+});
+
+const player2ScoreCounter = new ScoreCounter({
+    element: elements.player2Score,
+    animationDuration:
+        state.scoreAnimationDuration
+});
+
+const player1Card = new PlayerCard({
+    container: elements.player1Card,
+    nameElement: elements.player1BeyName,
+    imageElement: elements.player1BeyImage,
+    fallbackElement: elements.player1Fallback
+});
+
+const player2Card = new PlayerCard({
+    container: elements.player2Card,
+    nameElement: elements.player2BeyName,
+    imageElement: elements.player2BeyImage,
+    fallbackElement: elements.player2Fallback
+});
+
 const loadingScreen = new LoadingScreen({
     container: elements.loadingScreen,
     progressBar: elements.loadingProgressBar,
@@ -120,14 +156,6 @@ async function initializeTheme() {
     try {
         background.initialize();
         loadingScreen.show();
-
-        setupImageFallback(
-            elements.player1BeyImage
-        );
-
-        setupImageFallback(
-            elements.player2BeyImage
-        );
 
         const assetLoader = new AssetLoader({
             assets: PrototypeAssets,
@@ -206,10 +234,10 @@ function connectSocket() {
 
     state.socket.on(
         "state:sync",
-        (battle) => {
+        async (battle) => {
             state.pendingFinish = null;
 
-            renderBattle(battle, {
+            await renderBattle(battle, {
                 animateScore: false
             });
         }
@@ -219,6 +247,14 @@ function connectSocket() {
         "finish:registered",
         (finish) => {
             state.pendingFinish = finish;
+
+            if (finish.winnerId === "player-1") {
+                player1Card.highlightRoundWinner();
+            }
+
+            if (finish.winnerId === "player-2") {
+                player2Card.highlightRoundWinner();
+            }
         }
     );
 
@@ -243,7 +279,7 @@ function connectSocket() {
                             nextBattle,
                             options
                         ) => {
-                            renderBattle(
+                            await renderBattle(
                                 nextBattle,
                                 options
                             );
@@ -260,7 +296,7 @@ function connectSocket() {
 
             timeline.applyImmediate(
                 async () => {
-                    renderBattle(battle, {
+                    await renderBattle(battle, {
                         animateScore: false
                     });
                 }
@@ -269,7 +305,7 @@ function connectSocket() {
     );
 }
 
-function renderBattle(
+async function renderBattle(
     battle,
     { animateScore = false } = {}
 ) {
@@ -277,39 +313,37 @@ function renderBattle(
         return;
     }
 
-    const previousBattle = state.battle;
-
-    elements.player1BeyName.textContent =
-        battle.player1.bey.name;
-
-    elements.player2BeyName.textContent =
-        battle.player2.bey.name;
-
-    updateBeyImage(
-        elements.player1BeyImage,
-        battle.player1.bey.image
+    player1Card.setPlayer(
+        battle.player1,
+        {
+            fallbackImage:
+                getDefaultBeyImage("player-1")
+        }
     );
 
-    updateBeyImage(
-        elements.player2BeyImage,
-        battle.player2.bey.image
+    player2Card.setPlayer(
+        battle.player2,
+        {
+            fallbackImage:
+                getDefaultBeyImage("player-2")
+        }
     );
 
-    updateScore({
-        element: elements.player1Score,
-        previousScore:
-            previousBattle?.player1?.score,
-        nextScore: battle.player1.score,
-        animate: animateScore
-    });
+    const scoreAnimations = [
+        player1ScoreCounter.set(
+            battle.player1.score,
+            {
+                animate: animateScore
+            }
+        ),
 
-    updateScore({
-        element: elements.player2Score,
-        previousScore:
-            previousBattle?.player2?.score,
-        nextScore: battle.player2.score,
-        animate: animateScore
-    });
+        player2ScoreCounter.set(
+            battle.player2.score,
+            {
+                animate: animateScore
+            }
+        )
+    ];
 
     elements.battleRound.textContent =
         battle.round;
@@ -319,80 +353,35 @@ function renderBattle(
     if (battle.status === "waiting") {
         hideWinner();
         finishBanner.hide();
+
+        player1Card.reset();
+        player2Card.reset();
     }
 
     state.battle = battle;
-}
 
-function updateScore({
-    element,
-    previousScore,
-    nextScore,
-    animate
-}) {
-    const hasChanged =
-        previousScore !== undefined &&
-        previousScore !== nextScore;
-
-    if (!animate || !hasChanged) {
-        element.textContent = nextScore;
-        return;
-    }
-
-    element.classList.remove("is-changing");
-
-    void element.offsetWidth;
-
-    element.classList.add("is-changing");
-
-    window.setTimeout(() => {
-        element.textContent = nextScore;
-    }, state.scoreAnimationDuration * 0.5);
-
-    window.setTimeout(() => {
-        element.classList.remove(
-            "is-changing"
-        );
-    }, state.scoreAnimationDuration);
+    return Promise.all(scoreAnimations);
 }
 
 function updateLeader(battle) {
     const player1Score = battle.player1.score;
     const player2Score = battle.player2.score;
 
-    elements.player1Card.classList.remove(
-        "is-leading",
-        "is-dimmed"
-    );
-
-    elements.player2Card.classList.remove(
-        "is-leading",
-        "is-dimmed"
-    );
+    player1Card.setBattlePosition("neutral");
+    player2Card.setBattlePosition("neutral");
 
     if (player1Score === player2Score) {
         return;
     }
 
     if (player1Score > player2Score) {
-        elements.player1Card.classList.add(
-            "is-leading"
-        );
-
-        elements.player2Card.classList.add(
-            "is-dimmed"
-        );
-
+        player1Card.setBattlePosition("leading");
+        player2Card.setBattlePosition("dimmed");
         return;
     }
 
-    elements.player2Card.classList.add(
-        "is-leading"
-    );
-
-    elements.player1Card.classList.add(
-        "is-dimmed"
-    );
+    player2Card.setBattlePosition("leading");
+    player1Card.setBattlePosition("dimmed");
 }
 
 function showWinner(winner) {
@@ -420,43 +409,12 @@ function hideWinner() {
     );
 }
 
-function updateBeyImage(
-    imageElement,
-    imagePath
-) {
-    if (!imagePath) {
-        return;
-    }
-
-    imageElement.src = imagePath;
-}
-
 function getDefaultBeyImage(playerId) {
     if (playerId === "player-1") {
         return "/themes/prototype/assets/images/player1-bey.png";
     }
 
     return "/themes/prototype/assets/images/player2-bey.png";
-}
-
-function setupImageFallback(imageElement) {
-    imageElement.addEventListener(
-        "error",
-        () => {
-            imageElement.classList.add(
-                "is-missing"
-            );
-        }
-    );
-
-    imageElement.addEventListener(
-        "load",
-        () => {
-            imageElement.classList.remove(
-                "is-missing"
-            );
-        }
-    );
 }
 
 function wait(duration) {
