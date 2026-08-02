@@ -23,9 +23,50 @@
         <div class="screen-vignette"></div>
     </div>
 
-    <main id="prototype-hud" class="prototype-hud">
+    <section
+        id="loading-screen"
+        class="loading-screen"
+        aria-live="polite"
+    >
+        <div class="loading-panel">
+            <p class="loading-kicker">
+                SCORE BEYX SYSTEM
+            </p>
+
+            <h1>INITIALIZING</h1>
+
+            <p
+                id="loading-status"
+                class="loading-status"
+            >
+                Preparando carregamento...
+            </p>
+
+            <div
+                class="loading-progress-track"
+                aria-hidden="true"
+            >
+                <div
+                    id="loading-progress-bar"
+                    class="loading-progress-bar"
+                ></div>
+            </div>
+
+            <p
+                id="loading-progress-text"
+                class="loading-progress-text"
+            >
+                0%
+            </p>
+        </div>
+    </section>
+
+    <main
+        id="prototype-hud"
+        class="prototype-hud is-loading"
+    >
         <p id="connection-status" class="connection-status">
-            Conectando...
+            Aguardando inicialização...
         </p>
 
         <section class="battle-stage">
@@ -107,7 +148,9 @@
             <div class="event-backdrop"></div>
 
             <div class="finish-banner">
-                <span id="finish-title">BURST FINISH</span>
+                <span id="finish-title">
+                    BURST FINISH
+                </span>
             </div>
         </section>
 
@@ -143,6 +186,20 @@
     </main>
 
     <script src="/socket.io/socket.io.js"></script>
+
+    <script src="/themes/prototype/config/assets.js"></script>
+
+    <script src="/themes/prototype/loaders/ImageLoader.js"></script>
+    <script src="/themes/prototype/loaders/FontLoader.js"></script>
+    <script src="/themes/prototype/loaders/AudioLoader.js"></script>
+    <script src="/themes/prototype/loaders/VideoLoader.js"></script>
+    <script src="/themes/prototype/loaders/AssetLoader.js"></script>
+
+    <script src="/themes/prototype/components/LoadingScreen.js"></script>
+    <script src="/themes/prototype/components/Background.js"></script>
+    <script src="/themes/prototype/components/FinishBanner.js"></script>
+    <script src="/themes/prototype/components/ThemeTimeline.js"></script>
+
     <script src="/themes/prototype/prototype.js"></script>
 </body>
 </html>

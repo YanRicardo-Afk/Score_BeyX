@@ -1,5 +1,3 @@
-const socket = io();
-
 const FINISH_LABELS = {
     spin: "SPIN FINISH",
     over: "OVER FINISH",
@@ -8,12 +6,16 @@ const FINISH_LABELS = {
 };
 
 const state = {
+    socket: null,
     battle: null,
-    scoreAnimationDuration: 540,
-    finishDisplayDuration: 1500
+    pendingFinish: null,
+    scoreAnimationDuration: 540
 };
 
 const elements = {
+    prototypeHud:
+        document.getElementById("prototype-hud"),
+
     connectionStatus:
         document.getElementById("connection-status"),
 
@@ -54,7 +56,9 @@ const elements = {
         document.getElementById("winner-overlay"),
 
     winnerBackgroundImage:
-        document.getElementById("winner-background-image"),
+        document.getElementById(
+            "winner-background-image"
+        ),
 
     winnerBeyImage:
         document.getElementById("winner-bey-image"),
@@ -63,58 +67,217 @@ const elements = {
         document.getElementById("winner-bey-name"),
 
     techShapes:
-        document.getElementById("tech-shapes")
+        document.getElementById("tech-shapes"),
+
+    loadingScreen:
+        document.getElementById("loading-screen"),
+
+    loadingProgressBar:
+        document.getElementById(
+            "loading-progress-bar"
+        ),
+
+    loadingProgressText:
+        document.getElementById(
+            "loading-progress-text"
+        ),
+
+    loadingStatus:
+        document.getElementById("loading-status")
 };
 
-setupImageFallback(elements.player1BeyImage);
-setupImageFallback(elements.player2BeyImage);
-
-createTechShapes(18);
-
-socket.on("connect", () => {
-    elements.connectionStatus.textContent =
-        "ONLINE";
-
-    elements.connectionStatus.style.opacity = "1";
-
-    window.setTimeout(() => {
-        elements.connectionStatus.style.opacity = "0.35";
-    }, 1600);
+const background = new Background({
+    container: elements.techShapes,
+    amount: 18
 });
 
-socket.on("disconnect", () => {
-    elements.connectionStatus.textContent =
-        "OFFLINE";
-
-    elements.connectionStatus.style.opacity = "1";
+const finishBanner = new FinishBanner({
+    overlay: elements.finishOverlay,
+    title: elements.finishTitle,
+    labels: FINISH_LABELS,
+    displayDuration: 1500,
+    exitDuration: 480
 });
 
-socket.on("state:sync", (battle) => {
-    renderBattle(battle, {
-        animateScore: false
+const timeline = new ThemeTimeline({
+    finishBanner,
+    scoreAnimationDuration:
+        state.scoreAnimationDuration,
+    scorePauseDuration: 280,
+    winnerDelay: 320
+});
+
+const loadingScreen = new LoadingScreen({
+    container: elements.loadingScreen,
+    progressBar: elements.loadingProgressBar,
+    progressText: elements.loadingProgressText,
+    statusText: elements.loadingStatus
+});
+
+initializeTheme();
+
+async function initializeTheme() {
+    try {
+        background.initialize();
+        loadingScreen.show();
+
+        setupImageFallback(
+            elements.player1BeyImage
+        );
+
+        setupImageFallback(
+            elements.player2BeyImage
+        );
+
+        const assetLoader = new AssetLoader({
+            assets: PrototypeAssets,
+
+            onProgress: ({ progress }) => {
+                loadingScreen.updateProgress(
+                    progress
+                );
+            },
+
+            onStatusChange: (message) => {
+                loadingScreen.updateStatus(
+                    message
+                );
+            }
+        });
+
+        const result =
+            await assetLoader.loadAll();
+
+        if (result.errors.length > 0) {
+            console.warn(
+                "Alguns assets não foram carregados:",
+                result.errors
+            );
+        }
+
+        loadingScreen.updateStatus(
+            "Conectando ao servidor..."
+        );
+
+        connectSocket();
+
+        await wait(280);
+
+        elements.prototypeHud.classList.remove(
+            "is-loading"
+        );
+
+        await loadingScreen.hide();
+    } catch (error) {
+        console.error(
+            "Erro ao inicializar o Prototype:",
+            error
+        );
+
+        loadingScreen.updateStatus(
+            "Falha ao inicializar o HUD."
+        );
+    }
+}
+
+function connectSocket() {
+    state.socket = io();
+
+    state.socket.on("connect", () => {
+        elements.connectionStatus.textContent =
+            "ONLINE";
+
+        elements.connectionStatus.style.opacity =
+            "1";
+
+        window.setTimeout(() => {
+            elements.connectionStatus.style.opacity =
+                "0.35";
+        }, 1600);
     });
-});
 
-socket.on("battle:state", (battle) => {
-    renderBattle(battle, {
-        animateScore: true
+    state.socket.on("disconnect", () => {
+        elements.connectionStatus.textContent =
+            "OFFLINE";
+
+        elements.connectionStatus.style.opacity =
+            "1";
     });
-});
 
-socket.on("finish:registered", (finish) => {
-    showFinish(finish);
-});
+    state.socket.on(
+        "state:sync",
+        (battle) => {
+            state.pendingFinish = null;
+
+            renderBattle(battle, {
+                animateScore: false
+            });
+        }
+    );
+
+    state.socket.on(
+        "finish:registered",
+        (finish) => {
+            state.pendingFinish = finish;
+        }
+    );
+
+    state.socket.on(
+        "battle:state",
+        (battle) => {
+            if (
+                state.pendingFinish &&
+                battle.status !== "waiting"
+            ) {
+                const finish =
+                    state.pendingFinish;
+
+                state.pendingFinish = null;
+
+                timeline.playRoundResult({
+                    finish,
+                    battle,
+
+                    applyBattleState:
+                        async (
+                            nextBattle,
+                            options
+                        ) => {
+                            renderBattle(
+                                nextBattle,
+                                options
+                            );
+                        },
+
+                    showWinner:
+                        async (winner) => {
+                            showWinner(winner);
+                        }
+                });
+
+                return;
+            }
+
+            timeline.applyImmediate(
+                async () => {
+                    renderBattle(battle, {
+                        animateScore: false
+                    });
+                }
+            );
+        }
+    );
+}
 
 function renderBattle(
     battle,
-    { animateScore }
+    { animateScore = false } = {}
 ) {
     if (!battle) {
         return;
     }
 
     const previousBattle = state.battle;
-    state.battle = battle;
 
     elements.player1BeyName.textContent =
         battle.player1.bey.name;
@@ -155,16 +318,10 @@ function renderBattle(
 
     if (battle.status === "waiting") {
         hideWinner();
+        finishBanner.hide();
     }
 
-    if (
-        battle.status === "finished" &&
-        battle.winner
-    ) {
-        window.setTimeout(() => {
-            showWinner(battle.winner);
-        }, state.finishDisplayDuration + 240);
-    }
+    state.battle = battle;
 }
 
 function updateScore({
@@ -193,7 +350,9 @@ function updateScore({
     }, state.scoreAnimationDuration * 0.5);
 
     window.setTimeout(() => {
-        element.classList.remove("is-changing");
+        element.classList.remove(
+            "is-changing"
+        );
     }, state.scoreAnimationDuration);
 }
 
@@ -216,45 +375,24 @@ function updateLeader(battle) {
     }
 
     if (player1Score > player2Score) {
-        elements.player1Card.classList.add("is-leading");
-        elements.player2Card.classList.add("is-dimmed");
+        elements.player1Card.classList.add(
+            "is-leading"
+        );
+
+        elements.player2Card.classList.add(
+            "is-dimmed"
+        );
+
         return;
     }
 
-    elements.player2Card.classList.add("is-leading");
-    elements.player1Card.classList.add("is-dimmed");
-}
-
-function showFinish(finish) {
-    elements.finishTitle.textContent =
-        FINISH_LABELS[finish.type] ??
-        `${finish.type} FINISH`;
-
-    elements.finishOverlay.classList.remove(
-        "is-leaving"
+    elements.player2Card.classList.add(
+        "is-leading"
     );
 
-    elements.finishOverlay.classList.add(
-        "is-visible",
-        "is-entering"
+    elements.player1Card.classList.add(
+        "is-dimmed"
     );
-
-    window.setTimeout(() => {
-        elements.finishOverlay.classList.remove(
-            "is-entering"
-        );
-
-        elements.finishOverlay.classList.add(
-            "is-leaving"
-        );
-    }, state.finishDisplayDuration);
-
-    window.setTimeout(() => {
-        elements.finishOverlay.classList.remove(
-            "is-visible",
-            "is-leaving"
-        );
-    }, state.finishDisplayDuration + 480);
 }
 
 function showWinner(winner) {
@@ -265,8 +403,11 @@ function showWinner(winner) {
     elements.winnerBeyName.textContent =
         winner.bey.name;
 
-    elements.winnerBeyImage.src = imagePath;
-    elements.winnerBackgroundImage.src = imagePath;
+    elements.winnerBeyImage.src =
+        imagePath;
+
+    elements.winnerBackgroundImage.src =
+        imagePath;
 
     elements.winnerOverlay.classList.add(
         "is-visible"
@@ -279,7 +420,10 @@ function hideWinner() {
     );
 }
 
-function updateBeyImage(imageElement, imagePath) {
+function updateBeyImage(
+    imageElement,
+    imagePath
+) {
     if (!imagePath) {
         return;
     }
@@ -296,49 +440,27 @@ function getDefaultBeyImage(playerId) {
 }
 
 function setupImageFallback(imageElement) {
-    imageElement.addEventListener("error", () => {
-        imageElement.classList.add("is-missing");
-    });
+    imageElement.addEventListener(
+        "error",
+        () => {
+            imageElement.classList.add(
+                "is-missing"
+            );
+        }
+    );
 
-    imageElement.addEventListener("load", () => {
-        imageElement.classList.remove("is-missing");
-    });
+    imageElement.addEventListener(
+        "load",
+        () => {
+            imageElement.classList.remove(
+                "is-missing"
+            );
+        }
+    );
 }
 
-function createTechShapes(amount) {
-    const fragment = document.createDocumentFragment();
-
-    for (let index = 0; index < amount; index += 1) {
-        const shape = document.createElement("span");
-
-        const width = randomBetween(55, 220);
-        const height = randomBetween(24, 130);
-
-        shape.className = "tech-shape";
-
-        shape.style.width = `${width}px`;
-        shape.style.height = `${height}px`;
-
-        shape.style.left =
-            `${randomBetween(-10, 95)}%`;
-
-        shape.style.top =
-            `${randomBetween(-20, 100)}%`;
-
-        shape.style.setProperty(
-            "--duration",
-            `${randomBetween(14, 34)}s`
-        );
-
-        shape.style.animationDelay =
-            `${randomBetween(-24, 0)}s`;
-
-        fragment.appendChild(shape);
-    }
-
-    elements.techShapes.appendChild(fragment);
-}
-
-function randomBetween(minimum, maximum) {
-    return Math.random() * (maximum - minimum) + minimum;
+function wait(duration) {
+    return new Promise((resolve) => {
+        window.setTimeout(resolve, duration);
+    });
 }
