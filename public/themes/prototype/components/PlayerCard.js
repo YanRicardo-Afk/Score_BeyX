@@ -76,28 +76,7 @@ class PlayerCard {
         }
     }
 
-    highlightRoundWinner() {
-        window.clearTimeout(
-            this.roundHighlightTimer
-        );
-
-        this.container.classList.remove(
-            "is-round-winner"
-        );
-
-        void this.container.offsetWidth;
-
-        this.container.classList.add(
-            "is-round-winner"
-        );
-
-        this.roundHighlightTimer =
-            window.setTimeout(() => {
-                this.container.classList.remove(
-                    "is-round-winner"
-                );
-            }, 900);
-    }
+    
 
     reset() {
         window.clearTimeout(

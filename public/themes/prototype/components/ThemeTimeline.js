@@ -1,6 +1,8 @@
 class ThemeTimeline {
     constructor({
         finishBanner,
+        background = null,
+        flashIntensityByFinish = {},
         scoreAnimationDuration = 540,
         scorePauseDuration = 280,
         winnerDelay = 320
@@ -11,7 +13,20 @@ class ThemeTimeline {
             );
         }
 
+        if (
+            background !== null &&
+            !(background instanceof Background)
+        ) {
+            throw new Error(
+                "ThemeTimeline precisa receber um Background válido."
+            );
+        }
+
         this.finishBanner = finishBanner;
+        this.background = background;
+
+        this.flashIntensityByFinish =
+            flashIntensityByFinish;
 
         this.scoreAnimationDuration =
             scoreAnimationDuration;
@@ -35,6 +50,8 @@ class ThemeTimeline {
         return this.enqueue(async () => {
             this.running = true;
 
+            this.playBackgroundReaction(finish);
+
             await this.finishBanner.show(finish);
 
             await applyBattleState(battle, {
@@ -55,6 +72,22 @@ class ThemeTimeline {
             }
 
             this.running = false;
+        });
+    }
+
+    playBackgroundReaction(finish) {
+        if (!this.background) {
+            return;
+        }
+
+        const intensity =
+            this.flashIntensityByFinish[
+                finish?.type
+            ] ?? 1.2;
+
+        this.background.flash({
+            intensity,
+            duration: 700
         });
     }
 

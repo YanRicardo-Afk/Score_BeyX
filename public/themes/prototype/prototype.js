@@ -5,6 +5,13 @@ const FINISH_LABELS = {
     xtreme: "XTREME FINISH"
 };
 
+const FLASH_INTENSITY_BY_FINISH = {
+    spin: 1.08,
+    over: 1.18,
+    burst: 1.34,
+    xtreme: 1.5
+};
+
 const state = {
     socket: null,
     battle: null,
@@ -76,6 +83,16 @@ const elements = {
     winnerBeyName:
         document.getElementById("winner-bey-name"),
 
+    techBackground:
+        document.querySelector(
+            ".tech-background"
+        ),
+
+    techParticles:
+        document.getElementById(
+            "tech-particles"
+        ),
+
     techShapes:
         document.getElementById("tech-shapes"),
 
@@ -98,7 +115,11 @@ const elements = {
 
 const background = new Background({
     container: elements.techShapes,
-    amount: 18
+    particleContainer:
+        elements.techParticles,
+    root: elements.techBackground,
+    amount: 18,
+    particleAmount: 26
 });
 
 const finishBanner = new FinishBanner({
@@ -111,6 +132,9 @@ const finishBanner = new FinishBanner({
 
 const timeline = new ThemeTimeline({
     finishBanner,
+    background,
+    flashIntensityByFinish:
+        FLASH_INTENSITY_BY_FINISH,
     scoreAnimationDuration:
         state.scoreAnimationDuration,
     scorePauseDuration: 280,
@@ -141,6 +165,14 @@ const player2Card = new PlayerCard({
     nameElement: elements.player2BeyName,
     imageElement: elements.player2BeyImage,
     fallbackElement: elements.player2Fallback
+});
+
+const winnerScreen = new WinnerScreen({
+    overlay: elements.winnerOverlay,
+    beyImage: elements.winnerBeyImage,
+    backgroundImage:
+        elements.winnerBackgroundImage,
+    beyName: elements.winnerBeyName
 });
 
 const loadingScreen = new LoadingScreen({
@@ -247,14 +279,6 @@ function connectSocket() {
         "finish:registered",
         (finish) => {
             state.pendingFinish = finish;
-
-            if (finish.winnerId === "player-1") {
-                player1Card.highlightRoundWinner();
-            }
-
-            if (finish.winnerId === "player-2") {
-                player2Card.highlightRoundWinner();
-            }
         }
     );
 
@@ -287,7 +311,15 @@ function connectSocket() {
 
                     showWinner:
                         async (winner) => {
-                            showWinner(winner);
+                            await winnerScreen.show(
+                                winner,
+                                {
+                                    fallbackImage:
+                                        getDefaultBeyImage(
+                                            winner.id
+                                        )
+                                }
+                            );
                         }
                 });
 
@@ -351,11 +383,14 @@ async function renderBattle(
     updateLeader(battle);
 
     if (battle.status === "waiting") {
-        hideWinner();
+        await winnerScreen.hide();
+
         finishBanner.hide();
 
         player1Card.reset();
         player2Card.reset();
+
+        background.setIntensity(1);
     }
 
     state.battle = battle;
@@ -382,31 +417,6 @@ function updateLeader(battle) {
 
     player2Card.setBattlePosition("leading");
     player1Card.setBattlePosition("dimmed");
-}
-
-function showWinner(winner) {
-    const imagePath =
-        winner.bey.image ||
-        getDefaultBeyImage(winner.id);
-
-    elements.winnerBeyName.textContent =
-        winner.bey.name;
-
-    elements.winnerBeyImage.src =
-        imagePath;
-
-    elements.winnerBackgroundImage.src =
-        imagePath;
-
-    elements.winnerOverlay.classList.add(
-        "is-visible"
-    );
-}
-
-function hideWinner() {
-    elements.winnerOverlay.classList.remove(
-        "is-visible"
-    );
 }
 
 function getDefaultBeyImage(playerId) {

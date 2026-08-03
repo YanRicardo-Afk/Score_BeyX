@@ -26,6 +26,7 @@ class FinishBanner {
         this.exitDuration = exitDuration;
 
         this.running = false;
+        this.currentType = null;
     }
 
     async show(finish) {
@@ -36,6 +37,9 @@ class FinishBanner {
         }
 
         this.running = true;
+        this.currentType = finish.type;
+
+        this.applyFinishType(finish.type);
 
         this.title.textContent =
             this.labels[finish.type] ??
@@ -67,12 +71,35 @@ class FinishBanner {
         this.running = false;
     }
 
+    applyFinishType(type) {
+        this.overlay.dataset.finishType = type;
+
+        this.overlay.classList.remove(
+            "finish-spin",
+            "finish-over",
+            "finish-burst",
+            "finish-xtreme"
+        );
+
+        this.overlay.classList.add(
+            `finish-${type}`
+        );
+    }
+
     hide() {
         this.overlay.classList.remove(
             "is-visible",
             "is-entering",
-            "is-leaving"
+            "is-leaving",
+            "finish-spin",
+            "finish-over",
+            "finish-burst",
+            "finish-xtreme"
         );
+
+        delete this.overlay.dataset.finishType;
+
+        this.currentType = null;
     }
 
     isRunning() {
