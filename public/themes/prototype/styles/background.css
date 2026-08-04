@@ -1,0 +1,413 @@
+/* =========================================================
+   MILESTONE 5.3 — BACKGROUND GLOW
+   Adicione ao FINAL de prototype.css
+   ========================================================= */
+
+.tech-background {
+    --background-intensity: 1;
+    --flash-intensity: 1.35;
+    isolation: isolate;
+}
+
+.tech-background::before,
+.tech-background::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+}
+
+.tech-background::before {
+    z-index: 0;
+    opacity: calc(0.62 * var(--background-intensity));
+    background:
+        radial-gradient(
+            ellipse at 50% 47%,
+            rgba(92, 229, 255, 0.34) 0%,
+            rgba(45, 180, 212, 0.18) 28%,
+            rgba(26, 121, 157, 0.08) 48%,
+            transparent 72%
+        );
+    filter: blur(18px);
+    transform: scale(0.96);
+    animation: background-glow-breathing 12s ease-in-out infinite;
+    will-change: opacity, transform, filter;
+}
+
+.tech-background::after {
+    z-index: 0;
+    opacity: calc(0.3 * var(--background-intensity));
+    background:
+        radial-gradient(
+            circle at 28% 54%,
+            rgba(75, 227, 255, 0.22),
+            transparent 30%
+        ),
+        radial-gradient(
+            circle at 72% 48%,
+            rgba(100, 255, 195, 0.16),
+            transparent 32%
+        );
+    filter: blur(28px);
+    animation: background-secondary-drift 16s ease-in-out infinite alternate;
+}
+
+.tech-shapes,
+.tech-grid,
+.screen-vignette {
+    z-index: 1;
+}
+
+.tech-background.is-flashing::before {
+    animation: background-finish-flash 700ms cubic-bezier(.16, .84, .26, 1) both;
+}
+
+.tech-background.is-flashing::after {
+    animation: background-secondary-flash 700ms ease-out both;
+}
+
+@keyframes background-glow-breathing {
+    0%,
+    100% {
+        opacity: calc(0.48 * var(--background-intensity));
+        filter: blur(22px);
+        transform: scale(0.94);
+    }
+
+    38% {
+        opacity: calc(0.68 * var(--background-intensity));
+        filter: blur(16px);
+        transform: scale(1.015);
+    }
+
+    72% {
+        opacity: calc(0.56 * var(--background-intensity));
+        filter: blur(20px);
+        transform: scale(0.985);
+    }
+}
+
+@keyframes background-secondary-drift {
+    from {
+        opacity: calc(0.2 * var(--background-intensity));
+        transform: translate3d(-1.5%, 1%, 0) scale(0.98);
+    }
+
+    to {
+        opacity: calc(0.34 * var(--background-intensity));
+        transform: translate3d(1.5%, -1%, 0) scale(1.04);
+    }
+}
+
+@keyframes background-finish-flash {
+    0% {
+        opacity: calc(0.55 * var(--background-intensity));
+        filter: blur(18px);
+        transform: scale(1);
+    }
+
+    20% {
+        opacity: calc(0.96 * var(--flash-intensity));
+        filter: blur(8px);
+        transform: scale(1.08);
+    }
+
+    100% {
+        opacity: calc(0.52 * var(--background-intensity));
+        filter: blur(22px);
+        transform: scale(0.96);
+    }
+}
+
+@keyframes background-secondary-flash {
+    0% {
+        opacity: calc(0.28 * var(--background-intensity));
+    }
+
+    24% {
+        opacity: calc(0.75 * var(--flash-intensity));
+    }
+
+    100% {
+        opacity: calc(0.28 * var(--background-intensity));
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .tech-background::before,
+    .tech-background::after {
+        animation: none !important;
+    }
+}
+
+/* =========================================================
+   MILESTONE 5.3 — TECH PARTICLES
+   Adicione ao FINAL de prototype.css
+   ========================================================= */
+
+.tech-particles {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    overflow: hidden;
+    pointer-events: none;
+}
+
+.tech-particle {
+    position: absolute;
+    border-radius: 50%;
+    opacity: 0;
+    background:
+        radial-gradient(
+            circle,
+            rgba(220, 252, 255, 0.95) 0%,
+            rgba(116, 234, 255, 0.72) 42%,
+            rgba(88, 220, 255, 0.1) 72%,
+            transparent 100%
+        );
+    box-shadow:
+        0 0 8px rgba(91, 229, 255, 0.55);
+    animation:
+        tech-particle-drift
+        var(--particle-duration)
+        linear
+        infinite;
+    will-change:
+        transform,
+        opacity;
+}
+
+.tech-background.is-flashing
+.tech-particle {
+    animation-duration:
+        calc(
+            var(--particle-duration) * 0.72
+        );
+}
+
+@keyframes tech-particle-drift {
+    0% {
+        opacity: 0;
+        transform:
+            translate3d(0, 20px, 0)
+            scale(0.72);
+    }
+
+    14% {
+        opacity: 0.46;
+    }
+
+    52% {
+        opacity: 0.22;
+        transform:
+            translate3d(
+                calc(
+                    var(--particle-drift-x) * 0.5
+                ),
+                calc(
+                    var(--particle-drift-y) * 0.5
+                ),
+                0
+            )
+            scale(1);
+    }
+
+    82% {
+        opacity: 0.4;
+    }
+
+    100% {
+        opacity: 0;
+        transform:
+            translate3d(
+                var(--particle-drift-x),
+                var(--particle-drift-y),
+                0
+            )
+            scale(0.8);
+    }
+}
+
+@media (max-width: 650px) {
+    .tech-particle:nth-child(2n) {
+        display: none;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .tech-particle {
+        animation: none !important;
+        opacity: 0.18;
+    }
+}
+
+/* =========================================================
+   MILESTONE 5.3 — TECH SHAPE VARIATIONS
+   Adicione ao FINAL de prototype.css
+   ========================================================= */
+
+.tech-shape {
+    opacity:
+        calc(
+            var(--shape-opacity, 0.5) *
+            var(--background-intensity)
+        );
+    transform-origin: center;
+}
+
+/* Retângulo apenas contornado */
+
+.tech-shape-outline {
+    border:
+        1px solid
+        rgba(111, 255, 188, 0.3);
+    background:
+        linear-gradient(
+            135deg,
+            rgba(111, 255, 188, 0.025),
+            rgba(81, 235, 255, 0.08)
+        );
+}
+
+/* Módulo preenchido e translúcido */
+
+.tech-shape-solid {
+    border:
+        1px solid
+        rgba(116, 239, 255, 0.16);
+    background:
+        linear-gradient(
+            135deg,
+            rgba(70, 219, 255, 0.2),
+            rgba(92, 255, 199, 0.08)
+        );
+    box-shadow:
+        inset 0 0 18px
+        rgba(98, 233, 255, 0.08);
+}
+
+/* Barra tecnológica fina */
+
+.tech-shape-bar {
+    border: none;
+    clip-path: none;
+    background:
+        linear-gradient(
+            90deg,
+            transparent 0%,
+            rgba(91, 231, 255, 0.16) 10%,
+            rgba(132, 247, 255, 0.58) 48%,
+            rgba(98, 255, 201, 0.18) 86%,
+            transparent 100%
+        );
+    box-shadow:
+        0 0 9px
+        rgba(79, 222, 255, 0.18);
+}
+
+/* Pequeno quadrado de interface */
+
+.tech-shape-module {
+    border:
+        1px solid
+        rgba(120, 237, 255, 0.38);
+    background:
+        linear-gradient(
+            145deg,
+            rgba(101, 235, 255, 0.16),
+            rgba(8, 49, 69, 0.08)
+        );
+    clip-path: polygon(
+        22% 0,
+        100% 0,
+        100% 78%,
+        78% 100%,
+        0 100%,
+        0 22%
+    );
+}
+
+.tech-shape-module::before {
+    content: "";
+    position: absolute;
+    inset: 30%;
+    border:
+        1px solid
+        rgba(148, 246, 255, 0.34);
+}
+
+/* Dois módulos conectados */
+
+.tech-shape-double {
+    display: flex;
+    align-items: center;
+    border: none;
+    clip-path: none;
+    background:
+        linear-gradient(
+            90deg,
+            rgba(104, 237, 255, 0.24) 0 32%,
+            transparent 32% 42%,
+            rgba(104, 255, 202, 0.13) 42% 100%
+        );
+}
+
+.tech-shape-double::before {
+    content: "";
+    position: absolute;
+    left: 29%;
+    width: 18%;
+    height: 1px;
+    background:
+        rgba(140, 242, 255, 0.5);
+}
+
+.tech-shape-detail {
+    position: absolute;
+    right: 8%;
+    width: 26%;
+    height: 28%;
+    border:
+        1px solid
+        rgba(137, 242, 255, 0.32);
+    background:
+        rgba(89, 225, 255, 0.04);
+}
+
+/*
+    Cada tipo recebe uma variação mínima no movimento.
+*/
+
+.tech-shape-outline {
+    animation-timing-function: linear, ease-in-out;
+}
+
+.tech-shape-solid {
+    animation-direction: normal, alternate-reverse;
+}
+
+.tech-shape-bar {
+    animation-duration:
+        calc(var(--duration) * 0.86),
+        5s;
+}
+
+.tech-shape-module {
+    animation-duration:
+        calc(var(--duration) * 1.15),
+        4.8s;
+}
+
+.tech-shape-double {
+    animation-duration:
+        calc(var(--duration) * 1.28),
+        5.6s;
+}
+
+@media (max-width: 650px) {
+    .tech-shape-double,
+    .tech-shape-outline:nth-child(2n) {
+        opacity: 0.18;
+    }
+}
+

@@ -1,0 +1,241 @@
+/* =========================================================
+   MILESTONE 5 — FINISH BANNER POLISH
+   Adicione ao FINAL de prototype.css
+   ========================================================= */
+
+.event-overlay {
+    --finish-accent: #72e9ff;
+    --finish-accent-soft: rgba(114, 233, 255, 0.22);
+    --finish-accent-strong: rgba(114, 233, 255, 0.76);
+}
+
+.event-overlay.finish-spin {
+    --finish-accent: #78f6bb;
+    --finish-accent-soft: rgba(120, 246, 187, 0.18);
+    --finish-accent-strong: rgba(120, 246, 187, 0.68);
+}
+
+.event-overlay.finish-over {
+    --finish-accent: #73d9ff;
+    --finish-accent-soft: rgba(115, 217, 255, 0.2);
+    --finish-accent-strong: rgba(115, 217, 255, 0.74);
+}
+
+.event-overlay.finish-burst {
+    --finish-accent: #ffbf68;
+    --finish-accent-soft: rgba(255, 191, 104, 0.2);
+    --finish-accent-strong: rgba(255, 191, 104, 0.76);
+}
+
+.event-overlay.finish-xtreme {
+    --finish-accent: #ff6c73;
+    --finish-accent-soft: rgba(255, 108, 115, 0.22);
+    --finish-accent-strong: rgba(255, 108, 115, 0.84);
+}
+
+.finish-banner {
+    overflow: hidden;
+    isolation: isolate;
+    border-top:
+        1px solid
+        var(--finish-accent-strong);
+    border-bottom:
+        1px solid
+        var(--finish-accent-strong);
+    background:
+        linear-gradient(
+            90deg,
+            transparent 0%,
+            rgba(5, 19, 34, 0.94) 10%,
+            rgba(8, 34, 53, 0.98) 30%,
+            rgba(9, 40, 61, 0.98) 50%,
+            rgba(8, 34, 53, 0.98) 70%,
+            rgba(5, 19, 34, 0.94) 90%,
+            transparent 100%
+        );
+    box-shadow:
+        0 0 52px var(--finish-accent-soft),
+        inset 0 0 60px var(--finish-accent-soft);
+}
+
+.finish-banner::before,
+.finish-banner::after {
+    content: "";
+    position: absolute;
+    pointer-events: none;
+}
+
+/* Linha luminosa que atravessa a faixa uma única vez */
+
+.finish-banner::before {
+    z-index: 1;
+    top: 0;
+    bottom: 0;
+    left: -26%;
+    width: 18%;
+    opacity: 0;
+    background:
+        linear-gradient(
+            90deg,
+            transparent,
+            var(--finish-accent-soft),
+            var(--finish-accent),
+            transparent
+        );
+    filter: blur(8px);
+    transform: skewX(-18deg);
+}
+
+/* Pequenas linhas de interface no interior */
+
+.finish-banner::after {
+    z-index: 0;
+    inset: 14% 6%;
+    opacity: 0.26;
+    background:
+        repeating-linear-gradient(
+            90deg,
+            transparent 0 54px,
+            var(--finish-accent-soft) 55px 56px,
+            transparent 57px 112px
+        ),
+        linear-gradient(
+            90deg,
+            transparent,
+            var(--finish-accent-soft),
+            transparent
+        );
+    mask-image:
+        linear-gradient(
+            90deg,
+            transparent,
+            black 18%,
+            black 82%,
+            transparent
+        );
+}
+
+.event-overlay.is-entering
+.finish-banner::before {
+    animation:
+        finish-banner-light-pass
+        900ms
+        180ms
+        cubic-bezier(.16, .84, .24, 1)
+        both;
+}
+
+.finish-banner span {
+    position: relative;
+    z-index: 2;
+    padding: 0 4vw;
+    color: #f7fcff;
+    text-shadow:
+        0 0 18px var(--finish-accent-soft),
+        0 0 42px var(--finish-accent-soft),
+        0 10px 28px rgba(0, 0, 0, 0.52);
+}
+
+.event-overlay.is-entering
+.finish-banner span {
+    animation:
+        finish-title-in
+        680ms
+        160ms
+        cubic-bezier(.16, .84, .28, 1)
+        both;
+}
+
+.event-overlay.is-leaving
+.finish-banner span {
+    animation:
+        finish-title-out
+        340ms
+        ease-in
+        both;
+}
+
+.event-overlay.finish-burst
+.finish-banner {
+    box-shadow:
+        0 0 58px var(--finish-accent-soft),
+        inset 0 0 72px rgba(255, 174, 78, 0.08);
+}
+
+.event-overlay.finish-xtreme
+.finish-banner {
+    box-shadow:
+        0 0 70px var(--finish-accent-soft),
+        inset 0 0 82px rgba(255, 91, 104, 0.1);
+}
+
+@keyframes finish-banner-light-pass {
+    0% {
+        left: -26%;
+        opacity: 0;
+    }
+
+    18% {
+        opacity: 0.72;
+    }
+
+    72% {
+        opacity: 0.34;
+    }
+
+    100% {
+        left: 112%;
+        opacity: 0;
+    }
+}
+
+@keyframes finish-title-in {
+    0% {
+        opacity: 0;
+        letter-spacing: 0.18em;
+        filter: blur(10px);
+        transform:
+            translateY(18px)
+            scale(0.92);
+    }
+
+    58% {
+        opacity: 1;
+        filter: blur(0);
+        transform:
+            translateY(-2px)
+            scale(1.035);
+    }
+
+    100% {
+        opacity: 1;
+        letter-spacing: 0.08em;
+        transform:
+            translateY(0)
+            scale(1);
+    }
+}
+
+@keyframes finish-title-out {
+    from {
+        opacity: 1;
+        filter: blur(0);
+        transform: scale(1);
+    }
+
+    to {
+        opacity: 0;
+        filter: blur(7px);
+        transform:
+            translateY(-10px)
+            scale(1.04);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .finish-banner::before,
+    .finish-banner span {
+        animation-duration: 1ms !important;
+    }
+}
+

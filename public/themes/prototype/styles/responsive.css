@@ -1,0 +1,312 @@
+/* =========================================================
+   PROTOTYPE 0.2 — RESPONSIVIDADE
+   Adicione este bloco ao FINAL de prototype.css
+   ========================================================= */
+
+/*
+    Formato principal:
+    telas horizontais 16:9 usadas em monitor, TV, OBS e gravação.
+*/
+
+@media (min-aspect-ratio: 16 / 10) {
+    .battle-stage {
+        width: min(94vw, 1680px);
+        max-height: 92vh;
+    }
+
+    .bey-frame {
+        width: min(35vw, 600px);
+        max-height: 72vh;
+    }
+
+    .bey-name {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+}
+
+/*
+    Ultrawide 21:9:
+    limita a distância entre os elementos para o HUD não ficar espalhado.
+*/
+
+@media (min-aspect-ratio: 2 / 1) {
+    .battle-stage {
+        width: min(82vw, 1720px);
+        grid-template-columns:
+            minmax(0, 1fr)
+            minmax(230px, 0.34fr)
+            minmax(0, 1fr);
+        gap: clamp(28px, 4vw, 82px);
+    }
+
+    .bey-frame {
+        width: min(30vw, 590px);
+    }
+
+    .score-line {
+        font-size: clamp(5rem, 8vw, 10rem);
+    }
+}
+
+/*
+    Notebook e tablet em modo paisagem.
+*/
+
+@media (max-width: 1100px) and (orientation: landscape) {
+    .battle-stage {
+        width: 96vw;
+        grid-template-columns:
+            minmax(0, 1fr)
+            minmax(140px, 0.36fr)
+            minmax(0, 1fr);
+        gap: clamp(6px, 1.6vw, 22px);
+    }
+
+    .bey-frame {
+        width: min(37vw, 430px);
+    }
+
+    .bey-name {
+        margin-bottom: 6px;
+        font-size: clamp(1rem, 2.7vw, 2.2rem);
+    }
+
+    .score-line {
+        font-size: clamp(3.5rem, 9vw, 7rem);
+    }
+
+    .round-label {
+        margin: 10px 0;
+    }
+
+    .finish-banner {
+        min-height: clamp(90px, 25vh, 170px);
+    }
+
+    .finish-banner span {
+        font-size: clamp(2rem, 6vw, 4.5rem);
+    }
+}
+
+/*
+    Telas quase quadradas.
+*/
+
+@media (max-aspect-ratio: 4 / 3) and (min-width: 651px) {
+    .battle-stage {
+        width: 97vw;
+        grid-template-columns:
+            minmax(0, 1fr)
+            minmax(120px, 0.3fr)
+            minmax(0, 1fr);
+        gap: 6px;
+    }
+
+    .bey-frame {
+        width: min(38vw, 390px);
+    }
+
+    .score-line {
+        font-size: clamp(3.4rem, 10vw, 6.5rem);
+    }
+
+    .bey-name {
+        font-size: clamp(1rem, 3vw, 2rem);
+    }
+}
+
+/*
+    Celular e tablet em modo retrato.
+    Esse formato é uma adaptação funcional; o formato recomendado
+    para gravação continua sendo horizontal.
+*/
+
+@media (max-width: 650px) and (orientation: portrait) {
+    html,
+    body {
+        overflow-x: hidden;
+        overflow-y: auto;
+    }
+
+    .prototype-hud {
+        min-height: 100svh;
+        height: auto;
+        padding:
+            max(44px, env(safe-area-inset-top))
+            14px
+            max(28px, env(safe-area-inset-bottom));
+    }
+
+    .battle-stage {
+        width: 100%;
+        min-height: calc(100svh - 80px);
+        grid-template-columns: 1fr 1fr;
+        grid-template-areas:
+            "player1 player2"
+            "score score";
+        align-content: center;
+        gap: 8px 4px;
+    }
+
+    .player-card-left {
+        grid-area: player1;
+    }
+
+    .player-card-right {
+        grid-area: player2;
+    }
+
+    .score-center {
+        grid-area: score;
+        margin-top: 10px;
+    }
+
+    .bey-frame {
+        width: min(47vw, 260px);
+    }
+
+    .bey-name {
+        min-height: 2.6em;
+        display: grid;
+        place-items: end center;
+        margin-bottom: 0;
+        padding: 0 4px;
+        font-size: clamp(0.82rem, 4.2vw, 1.35rem);
+        line-height: 1.15;
+        white-space: normal;
+    }
+
+    .score-line {
+        font-size: clamp(4.3rem, 23vw, 7rem);
+    }
+
+    .score-center::before,
+    .score-center::after {
+        width: min(68vw, 330px);
+    }
+
+    .round-label {
+        margin: 10px 0;
+        font-size: 0.68rem;
+    }
+
+    .connection-status {
+        top: max(12px, env(safe-area-inset-top));
+        right: 14px;
+        font-size: 0.62rem;
+    }
+
+    .finish-banner {
+        width: 125%;
+        min-height: clamp(105px, 18vh, 160px);
+    }
+
+    .finish-banner span {
+        padding: 0 12px;
+        font-size: clamp(1.7rem, 10vw, 3.2rem);
+        text-align: center;
+        line-height: 1;
+    }
+
+    .winner-overlay {
+        grid-template-columns: 1fr;
+        grid-template-rows: 1fr;
+        place-items: center;
+        text-align: center;
+    }
+
+    .winner-background-image {
+        right: 50%;
+        top: 48%;
+        width: 125vw;
+        height: 85vh;
+        transform: translate(50%, -50%) scale(1.08);
+    }
+
+    .winner-bey-image {
+        position: absolute;
+        width: min(88vw, 540px);
+        max-height: 62vh;
+        opacity: 0.7;
+    }
+
+    .winner-copy {
+        align-self: end;
+        padding:
+            0 18px
+            max(11vh, env(safe-area-inset-bottom));
+    }
+
+    .winner-label {
+        font-size: clamp(4rem, 22vw, 7rem);
+    }
+
+    .winner-copy h2 {
+        margin-top: 18px;
+        font-size: clamp(1.3rem, 7vw, 2.5rem);
+    }
+}
+
+/*
+    Telas muito baixas, como navegador com barras abertas.
+*/
+
+@media (max-height: 560px) and (orientation: landscape) {
+    .prototype-hud {
+        align-items: center;
+    }
+
+    .battle-stage {
+        max-height: 96vh;
+    }
+
+    .bey-frame {
+        width: min(32vw, 330px);
+        max-height: 68vh;
+    }
+
+    .bey-name {
+        margin-bottom: 2px;
+        font-size: clamp(0.95rem, 2.5vw, 1.7rem);
+    }
+
+    .score-line {
+        font-size: clamp(3rem, 9vw, 5.5rem);
+    }
+
+    .round-label {
+        margin: 5px 0;
+        font-size: 0.62rem;
+    }
+
+    .finish-banner {
+        min-height: 42vh;
+    }
+
+    .winner-bey-image {
+        max-height: 74vh;
+    }
+}
+
+/*
+    Acessibilidade:
+    reduz movimentos quando o dispositivo ou usuário solicita.
+*/
+
+@media (prefers-reduced-motion: reduce) {
+    .tech-grid,
+    .tech-shape,
+    .bey-image,
+    .bey-frame::before,
+    .winner-glow {
+        animation: none !important;
+    }
+
+    .player-card,
+    .score-number {
+        transition-duration: 1ms !important;
+    }
+}
+
