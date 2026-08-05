@@ -1,0 +1,206 @@
+/* =========================================================
+   MILESTONE 5 — PLAYER CARD POLISH
+   Adicione ao FINAL de prototype.css
+   ========================================================= */
+
+.player-card {
+    position: relative;
+    isolation: isolate;
+}
+
+.player-card::before {
+    content: "";
+    position: absolute;
+    z-index: -1;
+    inset: 12% 4% 4%;
+    opacity: 0.18;
+    background:
+        radial-gradient(
+            circle at center,
+            rgba(89, 225, 255, 0.44),
+            transparent 64%
+        );
+    filter: blur(26px);
+    transform: scale(0.92);
+    transition:
+        opacity 520ms ease,
+        transform 520ms ease,
+        filter 520ms ease;
+}
+
+.player-card.is-leading::before {
+    opacity: 0.52;
+    transform: scale(1.04);
+    filter: blur(20px);
+}
+
+.player-card.is-dimmed::before {
+    opacity: 0.06;
+    transform: scale(0.86);
+}
+
+.bey-image {
+    animation:
+        bey-breathing-polished
+        4.8s
+        cubic-bezier(.45, 0, .55, 1)
+        infinite;
+    transform-origin: center;
+}
+
+.player-card-right .bey-image {
+    animation-delay: -2.4s;
+}
+
+.bey-frame::after {
+    content: "";
+    position: absolute;
+    z-index: 3;
+    top: 8%;
+    bottom: 8%;
+    left: -28%;
+    width: 18%;
+    opacity: 0;
+    pointer-events: none;
+    background:
+        linear-gradient(
+            90deg,
+            transparent,
+            rgba(255, 255, 255, 0.42),
+            rgba(137, 239, 255, 0.62),
+            transparent
+        );
+    filter: blur(7px);
+    transform:
+        skewX(-18deg)
+        translateX(0);
+}
+
+
+
+.player-card.is-round-winner {
+    z-index: 4;
+    animation:
+        round-winner-pulse
+        900ms
+        cubic-bezier(.16, .84, .26, 1)
+        both;
+}
+
+.player-card.is-round-winner .bey-image {
+    animation:
+        round-winner-bey-impact
+        900ms
+        cubic-bezier(.16, .84, .26, 1)
+        both;
+}
+
+.player-card.is-round-winner .bey-name {
+    animation:
+        round-winner-name
+        900ms
+        ease
+        both;
+}
+
+.bey-fallback {
+    opacity: 0;
+    transition: opacity 220ms ease;
+}
+
+.bey-fallback.is-visible {
+    opacity: 1;
+}
+
+@keyframes bey-breathing-polished {
+    0%,
+    100% {
+        transform:
+            translate3d(0, 0, 0)
+            scale(1)
+            rotate(0deg);
+    }
+
+    35% {
+        transform:
+            translate3d(0, -5px, 0)
+            scale(1.018)
+            rotate(-0.35deg);
+    }
+
+    68% {
+        transform:
+            translate3d(0, 2px, 0)
+            scale(0.995)
+            rotate(0.25deg);
+    }
+}
+
+
+
+@keyframes round-winner-pulse {
+    0% {
+        filter: brightness(1);
+        transform: scale(1);
+    }
+
+    34% {
+        filter:
+            brightness(1.35)
+            saturate(1.28);
+        transform: scale(1.045);
+    }
+
+    100% {
+        filter: brightness(1);
+        transform: scale(1);
+    }
+}
+
+@keyframes round-winner-bey-impact {
+    0% {
+        transform: scale(1);
+    }
+
+    32% {
+        transform:
+            translateY(-8px)
+            scale(1.085);
+    }
+
+    100% {
+        transform: scale(1);
+    }
+}
+
+@keyframes round-winner-name {
+    0% {
+        letter-spacing: 0.025em;
+        text-shadow:
+            0 4px 20px rgba(0, 0, 0, 0.42);
+    }
+
+    38% {
+        letter-spacing: 0.075em;
+        text-shadow:
+            0 0 20px rgba(126, 239, 255, 0.72),
+            0 0 42px rgba(91, 222, 255, 0.34);
+    }
+
+    100% {
+        letter-spacing: 0.025em;
+        text-shadow:
+            0 4px 20px rgba(0, 0, 0, 0.42);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .bey-image,
+    .player-card.is-round-winner,
+    .player-card.is-round-winner .bey-image,
+    .player-card.is-round-winner .bey-name,
+    .player-card.is-leading .bey-frame::after {
+        animation-duration: 1ms !important;
+        animation-iteration-count: 1 !important;
+    }
+}

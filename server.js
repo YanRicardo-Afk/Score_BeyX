@@ -10,6 +10,7 @@ async function bootstrap() {
     try {
         await app.start();
 
+        
         console.log(
             `Servidor iniciado em http://localhost:${PORT}`
         );
@@ -54,3 +55,4 @@ process.on("SIGINT", () => shutdown("SIGINT"));
 process.on("SIGTERM", () => shutdown("SIGTERM"));
 
 bootstrap();
+

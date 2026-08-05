@@ -208,18 +208,36 @@ class SocketManager {
     }
 
     serializePlayer(player, score) {
-        return {
-            id: player.id,
-            name: player.name,
-            score,
-            bey: {
-                id: player.bey.id,
-                name: player.bey.name,
-                color: player.bey.color,
-                image: player.bey.image
-            }
-        };
-    }
+    const activeBey = player.activeBey;
+
+    return {
+        id: player.id,
+        name: player.name,
+        score,
+
+        bey: {
+            id: activeBey.id,
+            name: activeBey.name,
+
+            color:
+                activeBey.theme?.primary ??
+                "#72E9FF",
+
+            image:
+                activeBey.avatar ??
+                null,
+
+            generation:
+                activeBey.generation,
+
+            series:
+                activeBey.series,
+
+            theme:
+                activeBey.theme
+        }
+    };
+}
 
     serializeFinish(finish) {
         return {

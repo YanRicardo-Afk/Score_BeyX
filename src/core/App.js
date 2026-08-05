@@ -6,8 +6,10 @@ const BattleManager = require("./BattleManager");
 const HttpServer = require("../http/HttpServer");
 const SocketManager = require("../socket/SocketManager");
 
-const Bey = require("../domain/Bey");
+const Deck = require("../domain/Deck");
 const Player = require("../domain/Player");
+
+const BeyCatalog = require("../catalog/BeyCatalog");
 
 const Events = require("../shared/Events");
 
@@ -21,6 +23,7 @@ class App {
         this.battleManager = null;
         this.httpServer = null;
         this.socketManager = null;
+        this.beyCatalog = null;
 
         this.started = false;
     }
@@ -33,6 +36,8 @@ class App {
         }
 
         this.eventBus = new EventBus();
+
+        this.beyCatalog = new BeyCatalog();
 
         this.battleManager = new BattleManager({
             eventBus: this.eventBus
@@ -68,28 +73,32 @@ class App {
     }
 
     createDefaultBattle() {
-        const player1Bey = new Bey({
-            id: "dran-sword",
-            name: "Dran Sword",
-            color: "#2F80ED"
+        const player1Deck = new Deck({
+            slots: [
+                this.beyCatalog.getById(
+                    "dran-sword"
+                )
+            ]
         });
 
-        const player2Bey = new Bey({
-            id: "wizard-arrow",
-            name: "Wizard Arrow",
-            color: "#F2C94C"
+        const player2Deck = new Deck({
+            slots: [
+                this.beyCatalog.getById(
+                    "storm-pegasis"
+                )
+            ]
         });
 
         const player1 = new Player({
             id: "player-1",
             name: "Jogador 1",
-            bey: player1Bey
+            deck: player1Deck
         });
 
         const player2 = new Player({
             id: "player-2",
             name: "Jogador 2",
-            bey: player2Bey
+            deck: player2Deck
         });
 
         this.battleManager.createBattle({
@@ -102,7 +111,9 @@ class App {
     async stop() {
         this.requireStarted();
 
-        if (this.battleManager.hasCurrentBattle()) {
+        if (
+            this.battleManager.hasCurrentBattle()
+        ) {
             this.battleManager.removeBattle();
         }
 
@@ -141,6 +152,12 @@ class App {
         this.requireStarted();
 
         return this.socketManager;
+    }
+
+    getBeyCatalog() {
+        this.requireStarted();
+
+        return this.beyCatalog;
     }
 
     isStarted() {

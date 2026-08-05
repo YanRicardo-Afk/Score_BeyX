@@ -1,0 +1,153 @@
+/* =========================================================
+   PROTOTYPE 0.3 — LOADING SCREEN
+   Adicione este bloco ao FINAL de prototype.css
+   ========================================================= */
+
+.prototype-hud {
+    transition:
+        opacity 520ms ease,
+        filter 520ms ease,
+        transform 520ms ease;
+}
+
+.prototype-hud.is-loading {
+    opacity: 0;
+    filter: blur(10px);
+    transform: scale(1.025);
+    pointer-events: none;
+}
+
+.loading-screen {
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    display: grid;
+    place-items: center;
+    padding: 24px;
+    background:
+        radial-gradient(
+            circle at 50% 45%,
+            rgba(31, 141, 172, 0.22),
+            transparent 42%
+        ),
+        rgba(2, 13, 24, 0.78);
+    backdrop-filter: blur(8px);
+    transition:
+        opacity 520ms ease,
+        visibility 520ms ease,
+        filter 520ms ease;
+}
+
+.loading-screen.is-leaving {
+    opacity: 0;
+    filter: blur(12px);
+}
+
+.loading-screen.is-hidden {
+    visibility: hidden;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.loading-panel {
+    width: min(90vw, 680px);
+    padding: clamp(26px, 5vw, 58px);
+    border:
+        1px solid
+        rgba(108, 230, 255, 0.32);
+    background:
+        linear-gradient(
+            145deg,
+            rgba(6, 28, 46, 0.86),
+            rgba(8, 54, 70, 0.72)
+        );
+    box-shadow:
+        0 0 60px rgba(39, 211, 255, 0.12),
+        inset 0 0 44px rgba(91, 232, 255, 0.06);
+    clip-path: polygon(
+        26px 0,
+        100% 0,
+        100% calc(100% - 26px),
+        calc(100% - 26px) 100%,
+        0 100%,
+        0 26px
+    );
+}
+
+.loading-kicker {
+    color: rgba(150, 239, 255, 0.68);
+    font-size: clamp(0.64rem, 1vw, 0.82rem);
+    letter-spacing: 0.34em;
+    text-transform: uppercase;
+}
+
+.loading-panel h1 {
+    margin-top: 12px;
+    color: #f4fbff;
+    font-size: clamp(2.3rem, 7vw, 5.8rem);
+    font-weight: 500;
+    letter-spacing: 0.04em;
+    line-height: 1;
+    text-shadow:
+        0 0 26px rgba(84, 230, 255, 0.24);
+}
+
+.loading-status {
+    min-height: 1.5em;
+    margin-top: 26px;
+    color: rgba(244, 251, 255, 0.7);
+    font-size: clamp(0.8rem, 1.4vw, 1rem);
+    letter-spacing: 0.08em;
+}
+
+.loading-progress-track {
+    position: relative;
+    width: 100%;
+    height: 8px;
+    margin-top: 22px;
+    overflow: hidden;
+    border:
+        1px solid
+        rgba(114, 233, 255, 0.34);
+    background: rgba(0, 9, 18, 0.68);
+}
+
+.loading-progress-bar {
+    width: 0%;
+    height: 100%;
+    background:
+        linear-gradient(
+            90deg,
+            #39d9ff,
+            #6dffc4
+        );
+    box-shadow:
+        0 0 18px rgba(66, 225, 255, 0.74);
+    transition: width 240ms ease;
+}
+
+.loading-progress-text {
+    margin-top: 12px;
+    color: #f4fbff;
+    font-size: clamp(1rem, 2vw, 1.4rem);
+    letter-spacing: 0.08em;
+    text-align: right;
+}
+
+@media (max-width: 650px) {
+    .loading-panel {
+        padding: 28px 22px;
+    }
+
+    .loading-panel h1 {
+        font-size: clamp(2rem, 12vw, 4rem);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .prototype-hud,
+    .loading-screen,
+    .loading-progress-bar {
+        transition-duration: 1ms !important;
+    }
+}
