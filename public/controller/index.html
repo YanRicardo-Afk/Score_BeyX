@@ -2,70 +2,140 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1.0, maximum-scale=1.0"
-    >
-    <title>Controller - Beyblade Overlay</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Controller - Score BeyX</title>
+    <link rel="stylesheet" href="/controller/controller.css">
 </head>
 <body>
-    <main>
-        <h1>Controller</h1>
+    <div class="controller-background" aria-hidden="true">
+        <div class="controller-grid"></div>
+        <div class="controller-glow"></div>
+    </div>
 
-        <p id="connection-status">Conectando...</p>
-        <p id="command-feedback"></p>
+    <main class="controller-shell">
+        <header class="controller-header">
+            <div>
+                <p class="eyebrow">SCORE BEYX SYSTEM</p>
+                <h1>Battle Controller</h1>
+                <p class="header-description">
+                    Configure os jogadores, escolha os Beys e controle a batalha em tempo real.
+                </p>
+            </div>
 
-        <section>
-            <button id="start-battle" type="button">
-                Iniciar batalha
-            </button>
+            <div class="connection-panel">
+                <span id="connection-indicator" class="connection-indicator"></span>
+                <span id="connection-status">Conectando...</span>
+            </div>
+        </header>
 
-            <button id="reset-battle" type="button">
-                Reiniciar batalha
+        <p id="command-feedback" class="command-feedback" aria-live="polite"></p>
+
+        <section class="setup-panel">
+            <div class="section-heading">
+                <div>
+                    <p class="section-kicker">BATTLE SETUP</p>
+                    <h2>Configurar batalha</h2>
+                </div>
+                <p class="selection-hint">Versão atual: 1 Bey por jogador</p>
+            </div>
+
+            <div class="players-grid">
+                <article class="player-setup player-setup-one">
+                    <div class="player-heading">
+                        <span class="player-number">01</span>
+                        <div>
+                            <p>PLAYER 1</p>
+                            <h3>Primeiro jogador</h3>
+                        </div>
+                    </div>
+
+                    <label class="field-label" for="player1-name">Nome do jogador</label>
+                    <input id="player1-name" class="player-name-input" type="text" maxlength="30" value="Jogador 1" autocomplete="off">
+
+                    <div class="deck-summary">
+                        <span>Deck selecionado</span>
+                        <strong id="player1-selection-count">0 / 1</strong>
+                    </div>
+
+                    <div id="player1-bey-list" class="bey-list"></div>
+                </article>
+
+                <div class="versus-mark" aria-hidden="true">VS</div>
+
+                <article class="player-setup player-setup-two">
+                    <div class="player-heading">
+                        <span class="player-number">02</span>
+                        <div>
+                            <p>PLAYER 2</p>
+                            <h3>Segundo jogador</h3>
+                        </div>
+                    </div>
+
+                    <label class="field-label" for="player2-name">Nome do jogador</label>
+                    <input id="player2-name" class="player-name-input" type="text" maxlength="30" value="Jogador 2" autocomplete="off">
+
+                    <div class="deck-summary">
+                        <span>Deck selecionado</span>
+                        <strong id="player2-selection-count">0 / 1</strong>
+                    </div>
+
+                    <div id="player2-bey-list" class="bey-list"></div>
+                </article>
+            </div>
+
+            <button id="create-battle" class="primary-action" type="button" disabled>
+                Configurar nova batalha
             </button>
         </section>
 
-        <fieldset>
-            <legend>Vencedor da rodada</legend>
+        <section class="battle-controls">
+            <div class="section-heading">
+                <div>
+                    <p class="section-kicker">LIVE CONTROL</p>
+                    <h2>Controle da batalha</h2>
+                </div>
+            </div>
 
-            <label>
-                <input
-                    type="radio"
-                    name="winner"
-                    value="player-1"
-                    checked
-                >
-                Jogador 1
-            </label>
+            <div class="main-actions">
+                <button id="start-battle" class="control-button start-button" type="button">Iniciar batalha</button>
+                <button id="reset-battle" class="control-button reset-button" type="button">Reiniciar batalha</button>
+            </div>
 
-            <label>
-                <input
-                    type="radio"
-                    name="winner"
-                    value="player-2"
-                >
-                Jogador 2
-            </label>
-        </fieldset>
+            <fieldset class="winner-selector">
+                <legend>Vencedor da rodada</legend>
 
-        <section>
-            <button data-finish="spin" type="button">
-                Spin Finish (+1)
-            </button>
+                <label class="winner-option">
+                    <input type="radio" name="winner" value="player-1" checked>
+                    <span>Jogador 1</span>
+                </label>
 
-            <button data-finish="over" type="button">
-                Over Finish (+2)
-            </button>
+                <label class="winner-option">
+                    <input type="radio" name="winner" value="player-2">
+                    <span>Jogador 2</span>
+                </label>
+            </fieldset>
 
-            <button data-finish="burst" type="button">
-                Burst Finish (+2)
-            </button>
-
-            <button data-finish="xtreme" type="button">
-                Xtreme Finish (+3)
-            </button>
+            <div class="finish-grid">
+                <button data-finish="spin" class="finish-button finish-spin" type="button"><span>Spin Finish</span><strong>+1</strong></button>
+                <button data-finish="over" class="finish-button finish-over" type="button"><span>Over Finish</span><strong>+2</strong></button>
+                <button data-finish="burst" class="finish-button finish-burst" type="button"><span>Burst Finish</span><strong>+2</strong></button>
+                <button data-finish="xtreme" class="finish-button finish-xtreme" type="button"><span>Xtreme Finish</span><strong>+3</strong></button>
+            </div>
         </section>
     </main>
+
+    <template id="bey-card-template">
+        <button class="bey-card" type="button">
+            <span class="bey-card-image-frame">
+                <img class="bey-card-image" src="" alt="">
+            </span>
+            <span class="bey-card-copy">
+                <strong class="bey-card-name"></strong>
+                <small class="bey-card-series"></small>
+            </span>
+            <span class="bey-card-check">✓</span>
+        </button>
+    </template>
 
     <script src="/socket.io/socket.io.js"></script>
     <script src="/controller/controller.js"></script>

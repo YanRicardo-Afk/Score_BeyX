@@ -11,6 +11,7 @@ async function bootstrap() {
         await app.start();
 
         
+        
         console.log(
             `Servidor iniciado em http://localhost:${PORT}`
         );

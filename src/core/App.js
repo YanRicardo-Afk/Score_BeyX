@@ -2,14 +2,14 @@ const path = require("path");
 
 const EventBus = require("./EventBus");
 const BattleManager = require("./BattleManager");
+const BattleFactory = require("./BattleFactory");
 
 const HttpServer = require("../http/HttpServer");
 const SocketManager = require("../socket/SocketManager");
 
-const Deck = require("../domain/Deck");
-const Player = require("../domain/Player");
-
-const BeyCatalog = require("../catalog/BeyCatalog");
+const BeyCatalog = require(
+    "../catalog/BeyCatalog"
+);
 
 const Events = require("../shared/Events");
 
@@ -20,10 +20,11 @@ class App {
         this.port = port;
 
         this.eventBus = null;
+        this.beyCatalog = null;
+        this.battleFactory = null;
         this.battleManager = null;
         this.httpServer = null;
         this.socketManager = null;
-        this.beyCatalog = null;
 
         this.started = false;
     }
@@ -37,26 +38,52 @@ class App {
 
         this.eventBus = new EventBus();
 
-        this.beyCatalog = new BeyCatalog();
+        this.beyCatalog =
+            new BeyCatalog();
 
-        this.battleManager = new BattleManager({
-            eventBus: this.eventBus
-        });
+        this.battleFactory =
+            new BattleFactory({
+                beyCatalog:
+                    this.beyCatalog
+            });
 
-        this.httpServer = new HttpServer({
-            port: this.port,
-            publicPath: path.join(
-                __dirname,
-                "../../public"
-            )
-        });
+        this.battleManager =
+            new BattleManager({
+                eventBus:
+                    this.eventBus
+            });
 
-        this.socketManager = new SocketManager({
-            httpServer:
-                this.httpServer.getHttpServer(),
-            eventBus: this.eventBus,
-            battleManager: this.battleManager
-        });
+        this.httpServer =
+    new HttpServer({
+        port: this.port,
+
+        publicPath: path.join(
+            __dirname,
+            "../../public"
+        ),
+
+        beyCatalog:
+            this.beyCatalog,
+
+        battleFactory:
+            this.battleFactory,
+
+        battleManager:
+            this.battleManager
+    });
+
+        this.socketManager =
+            new SocketManager({
+                httpServer:
+                    this.httpServer
+                        .getHttpServer(),
+
+                eventBus:
+                    this.eventBus,
+
+                battleManager:
+                    this.battleManager
+            });
 
         this.createDefaultBattle();
 
@@ -64,68 +91,69 @@ class App {
 
         this.started = true;
 
-        this.eventBus.emit(Events.APP_STARTED, {
-            port: this.port,
-            startedAt: new Date()
-        });
+        this.eventBus.emit(
+            Events.APP_STARTED,
+            {
+                port: this.port,
+                startedAt: new Date()
+            }
+        );
 
         return this;
     }
 
     createDefaultBattle() {
-        const player1Deck = new Deck({
-            slots: [
-                this.beyCatalog.getById(
-                    "dran-sword"
-                )
-            ]
-        });
+        const battleData =
+            this.battleFactory.create({
+                id: "battle-1",
 
-        const player2Deck = new Deck({
-            slots: [
-                this.beyCatalog.getById(
-                    "storm-pegasis"
-                )
-            ]
-        });
+                player1: {
+                    name: "Jogador 1",
 
-        const player1 = new Player({
-            id: "player-1",
-            name: "Jogador 1",
-            deck: player1Deck
-        });
+                    deck: [
+                        "dran-sword"
+                    ]
+                },
 
-        const player2 = new Player({
-            id: "player-2",
-            name: "Jogador 2",
-            deck: player2Deck
-        });
+                player2: {
+                    name: "Jogador 2",
 
-        this.battleManager.createBattle({
-            id: "battle-1",
-            player1,
-            player2
-        });
+                    deck: [
+                        "storm-pegasis"
+                    ]
+                }
+            });
+
+        return this.battleManager
+            .createBattle(
+                battleData
+            );
     }
 
     async stop() {
         this.requireStarted();
 
         if (
-            this.battleManager.hasCurrentBattle()
+            this.battleManager
+                .hasCurrentBattle()
         ) {
-            this.battleManager.removeBattle();
+            this.battleManager
+                .removeBattle();
         }
 
         if (this.socketManager) {
-            await this.socketManager.close();
+            await this.socketManager
+                .close();
         }
 
         await this.httpServer.stop();
 
-        this.eventBus.emit(Events.APP_STOPPED, {
-            stoppedAt: new Date()
-        });
+        this.eventBus.emit(
+            Events.APP_STOPPED,
+            {
+                stoppedAt: new Date()
+            }
+        );
 
         this.started = false;
     }
@@ -134,6 +162,18 @@ class App {
         this.requireStarted();
 
         return this.eventBus;
+    }
+
+    getBeyCatalog() {
+        this.requireStarted();
+
+        return this.beyCatalog;
+    }
+
+    getBattleFactory() {
+        this.requireStarted();
+
+        return this.battleFactory;
     }
 
     getBattleManager() {
@@ -152,12 +192,6 @@ class App {
         this.requireStarted();
 
         return this.socketManager;
-    }
-
-    getBeyCatalog() {
-        this.requireStarted();
-
-        return this.beyCatalog;
     }
 
     isStarted() {
