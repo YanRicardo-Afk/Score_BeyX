@@ -46,7 +46,7 @@ Uma versão LTS do Node.js é recomendada.
 Clone o repositório:
 
 ```bash
-git clone <URL_DO_REPOSITORIO>
+git clone https://github.com/YanRicardo-Afk/Score_BeyX.git
 ```
 
 Entre na pasta:
@@ -111,6 +111,8 @@ http://localhost:3000/api/beys
 
 ## Como configurar uma batalha
 
+![Controller do Score_BeyX](../docs/images/controller.jpeg)
+
 1. Abra `/controller`.
 2. Digite o nome dos dois jogadores.
 3. Selecione um Bey para cada jogador.
@@ -121,7 +123,7 @@ http://localhost:3000/api/beys
 8. Registre o tipo de Finish.
 9. O placar e o HUD serão atualizados automaticamente.
 
-![Controller do Score_BeyX](../docs/images/controller.jpeg)
+
 
 ## Beys cadastrados atualmente
 
