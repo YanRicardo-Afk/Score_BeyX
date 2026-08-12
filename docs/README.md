@@ -2,7 +2,7 @@
 
 Score_BeyX é uma engine de overlay para batalhas de **Beyblade X**, criada para controlar placar, finalizações, jogadores e HUDs em tempo real.
 
-![Score_BeyX Prototype HUD](docs/images/prototype-hud.png)
+![Score_BeyX Prototype HUD](../docs/images/prototype-hud.png)
 
 O projeto possui um painel de controle para configurar batalhas e registrar resultados, enquanto as telas de overlay são atualizadas automaticamente através de Socket.IO.
 
