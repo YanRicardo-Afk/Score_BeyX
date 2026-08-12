@@ -121,6 +121,8 @@ http://localhost:3000/api/beys
 8. Registre o tipo de Finish.
 9. O placar e o HUD serão atualizados automaticamente.
 
+![Controller do Score_BeyX](../docs/images/controller.jpeg)
+
 ## Beys cadastrados atualmente
 
 - Dran Sword
