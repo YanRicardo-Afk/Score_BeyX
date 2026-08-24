@@ -23,6 +23,9 @@ const elements = {
     prototypeHud:
         document.getElementById("prototype-hud"),
 
+    fullscreenButton:
+    document.getElementById("fullscreen-button"),
+    
     connectionStatus:
         document.getElementById("connection-status"),
 
@@ -186,6 +189,7 @@ initializeTheme();
 
 async function initializeTheme() {
     try {
+        setupFullscreen();
         background.initialize();
         loadingScreen.show();
 
@@ -426,6 +430,78 @@ function getDefaultBeyImage(playerId) {
 
     return "/themes/prototype/assets/images/player2-bey.png";
 }
+
+function setupFullscreen() {
+    if (!elements.fullscreenButton) {
+        return;
+    }
+
+    if (!document.documentElement.requestFullscreen) {
+        elements.fullscreenButton.classList.add(
+            "is-unavailable"
+        );
+
+        return;
+    }
+
+    elements.fullscreenButton.addEventListener(
+        "click",
+        toggleFullscreen
+    );
+
+    document.addEventListener(
+        "fullscreenchange",
+        updateFullscreenButton
+    );
+
+    updateFullscreenButton();
+}
+
+async function toggleFullscreen() {
+    try {
+        if (!document.fullscreenElement) {
+            await document.documentElement.requestFullscreen({
+                navigationUI: "hide"
+            });
+
+            return;
+        }
+
+        await document.exitFullscreen();
+    } catch (error) {
+        console.error(
+            "Não foi possível alterar o modo de tela cheia:",
+            error
+        );
+    }
+}
+
+function updateFullscreenButton() {
+    if (!elements.fullscreenButton) {
+        return;
+    }
+
+    const isFullscreen =
+        Boolean(document.fullscreenElement);
+
+    elements.fullscreenButton.classList.toggle(
+        "is-hidden",
+        isFullscreen
+    );
+
+    elements.fullscreenButton.setAttribute(
+        "aria-label",
+        isFullscreen
+            ? "Sair da tela cheia"
+            : "Entrar em tela cheia"
+    );
+
+    elements.fullscreenButton.title =
+        isFullscreen
+            ? "Sair da tela cheia"
+            : "Tela cheia";
+}
+
 
 function wait(duration) {
     return new Promise((resolve) => {
