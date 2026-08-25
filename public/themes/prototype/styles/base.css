@@ -702,3 +702,24 @@ input {
 .fullscreen-button.is-unavailable {
     display: none;
 }
+
+
+@media (min-width: 651px) {
+    .battle-stage {
+        position: relative;
+    }
+
+    .score-center {
+        position: absolute;
+
+        left: 50%;
+        top: 50%;
+
+        transform: translate(-50%, -50%);
+
+        grid-column: auto;
+        grid-row: auto;
+
+        z-index: 5;
+    }
+}
