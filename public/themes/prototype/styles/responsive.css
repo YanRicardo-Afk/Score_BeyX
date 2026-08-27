@@ -309,3 +309,13 @@
         transition-duration: 1ms !important;
     }
 }
+
+/* =========================================================
+   FULLSCREEN — AJUSTE DO PLACAR EM TABLET / LANDSCAPE
+   ========================================================= */
+
+@media
+    (min-width: 651px)
+    and (max-width: 1100px)
+    and (orientation: landscape) {
+}

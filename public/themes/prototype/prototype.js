@@ -15,8 +15,11 @@ const FLASH_INTENSITY_BY_FINISH = {
 const state = {
     socket: null,
     battle: null,
+    initialBattle: null,
     pendingFinish: null,
-    scoreAnimationDuration: 540
+    scoreAnimationDuration: 540,
+
+    loadedAssetSources: new Set()
 };
 
 const elements = {
@@ -190,40 +193,39 @@ initializeTheme();
 async function initializeTheme() {
     try {
         setupFullscreen();
+
         background.initialize();
         loadingScreen.show();
-
-        const assetLoader = new AssetLoader({
-            assets: PrototypeAssets,
-
-            onProgress: ({ progress }) => {
-                loadingScreen.updateProgress(
-                    progress
-                );
-            },
-
-            onStatusChange: (message) => {
-                loadingScreen.updateStatus(
-                    message
-                );
-            }
-        });
-
-        const result =
-            await assetLoader.loadAll();
-
-        if (result.errors.length > 0) {
-            console.warn(
-                "Alguns assets não foram carregados:",
-                result.errors
-            );
-        }
 
         loadingScreen.updateStatus(
             "Conectando ao servidor..."
         );
 
-        connectSocket();
+        const initialBattle =
+            await connectSocket();
+
+        state.initialBattle =
+            initialBattle;
+
+        loadingScreen.updateStatus(
+            "Preparando assets..."
+        );
+
+        await preloadBattleAssets(
+    initialBattle,
+    {
+        showProgress: true
+    }
+);
+
+        if (initialBattle) {
+            await renderBattle(
+                initialBattle,
+                {
+                    animateScore: false
+                }
+            );
+        }
 
         await wait(280);
 
@@ -247,99 +249,253 @@ async function initializeTheme() {
 function connectSocket() {
     state.socket = io();
 
-    state.socket.on("connect", () => {
-        elements.connectionStatus.textContent =
-            "ONLINE";
+    return new Promise((resolve) => {
+        let initialStateReceived =
+            false;
 
-        elements.connectionStatus.style.opacity =
-            "1";
+        state.socket.on("connect", () => {
+            elements.connectionStatus.textContent =
+                "ONLINE";
 
-        window.setTimeout(() => {
             elements.connectionStatus.style.opacity =
-                "0.35";
-        }, 1600);
-    });
+                "1";
 
-    state.socket.on("disconnect", () => {
-        elements.connectionStatus.textContent =
-            "OFFLINE";
+            window.setTimeout(() => {
+                elements.connectionStatus.style.opacity =
+                    "0.35";
+            }, 1600);
+        });
 
-        elements.connectionStatus.style.opacity =
-            "1";
-    });
+        state.socket.on(
+            "disconnect",
+            () => {
+                elements.connectionStatus.textContent =
+                    "OFFLINE";
 
-    state.socket.on(
-        "state:sync",
-        async (battle) => {
-            state.pendingFinish = null;
+                elements.connectionStatus.style.opacity =
+                    "1";
+            }
+        );
 
-            await renderBattle(battle, {
-                animateScore: false
-            });
-        }
-    );
-
-    state.socket.on(
-        "finish:registered",
-        (finish) => {
-            state.pendingFinish = finish;
-        }
-    );
-
-    state.socket.on(
-        "battle:state",
-        (battle) => {
-            if (
-                state.pendingFinish &&
-                battle.status !== "waiting"
-            ) {
-                const finish =
-                    state.pendingFinish;
-
+        state.socket.on(
+            "state:sync",
+            (battle) => {
                 state.pendingFinish = null;
 
-                timeline.playRoundResult({
-                    finish,
-                    battle,
+                if (!initialStateReceived) {
+                    initialStateReceived =
+                        true;
 
-                    applyBattleState:
-                        async (
-                            nextBattle,
-                            options
-                        ) => {
-                            await renderBattle(
+                    resolve(battle);
+
+                    return;
+                }
+
+                timeline.applyImmediate(
+                    async () => {
+                        await renderBattle(
+                            battle,
+                            {
+                                animateScore:
+                                    false
+                            }
+                        );
+                    }
+                );
+            }
+        );
+
+        state.socket.on(
+            "finish:registered",
+            (finish) => {
+                state.pendingFinish =
+                    finish;
+            }
+        );
+
+        state.socket.on(
+        "battle:state",
+        async (battle) => {
+
+            await preloadBattleAssets(battle);
+
+                if (
+                    state.pendingFinish &&
+                    battle.status !== "waiting"
+                ) {
+                    const finish =
+                        state.pendingFinish;
+
+                    state.pendingFinish =
+                        null;
+
+                    timeline.playRoundResult({
+                        finish,
+                        battle,
+
+                        applyBattleState:
+                            async (
                                 nextBattle,
                                 options
-                            );
-                        },
+                            ) => {
+                                await renderBattle(
+                                    nextBattle,
+                                    options
+                                );
+                            },
 
-                    showWinner:
-                        async (winner) => {
-                            await winnerScreen.show(
-                                winner,
-                                {
-                                    fallbackImage:
-                                        getDefaultBeyImage(
-                                            winner.id
-                                        )
-                                }
-                            );
-                        }
-                });
-
-                return;
-            }
-
-            timeline.applyImmediate(
-                async () => {
-                    await renderBattle(battle, {
-                        animateScore: false
+                        showWinner:
+                            async (winner) => {
+                                await winnerScreen.show(
+                                    winner,
+                                    {
+                                        fallbackImage:
+                                            getDefaultBeyImage(
+                                                winner.id
+                                            )
+                                    }
+                                );
+                            }
                     });
+
+                    return;
                 }
+
+                timeline.applyImmediate(
+                    async () => {
+                        await renderBattle(
+                            battle,
+                            {
+                                animateScore:
+                                    false
+                            }
+                        );
+                    }
+                );
+            }
+        );
+    });
+}
+
+async function preloadBattleAssets(
+    battle,
+    {
+        showProgress = false
+    } = {}
+) {
+    if (!battle) {
+        return;
+    }
+
+    const assets =
+        createPrototypeAssets(battle);
+
+    const missingAssets = {
+        images:
+            assets.images.filter(
+                (source) =>
+                    !state.loadedAssetSources.has(
+                        source
+                    )
+            ),
+
+        fonts:
+            assets.fonts.filter(
+                (source) => {
+                    const key =
+                        typeof source === "string"
+                            ? source
+                            : source.source;
+
+                    return !state.loadedAssetSources.has(
+                        key
+                    );
+                }
+            ),
+
+        audio:
+            assets.audio.filter(
+                (source) => {
+                    const key =
+                        typeof source === "string"
+                            ? source
+                            : source.source;
+
+                    return !state.loadedAssetSources.has(
+                        key
+                    );
+                }
+            ),
+
+        videos:
+            assets.videos.filter(
+                (source) => {
+                    const key =
+                        typeof source === "string"
+                            ? source
+                            : source.source;
+
+                    return !state.loadedAssetSources.has(
+                        key
+                    );
+                }
+            )
+    };
+
+    const totalMissing =
+        missingAssets.images.length +
+        missingAssets.fonts.length +
+        missingAssets.audio.length +
+        missingAssets.videos.length;
+
+    if (totalMissing === 0) {
+        return;
+    }
+
+    const assetLoader =
+        new AssetLoader({
+            assets: missingAssets,
+
+            onProgress: ({ progress }) => {
+                if (!showProgress) {
+                    return;
+                }
+
+                loadingScreen.updateProgress(
+                    progress
+                );
+            },
+
+            onStatusChange: (message) => {
+                if (!showProgress) {
+                    return;
+                }
+
+                loadingScreen.updateStatus(
+                    message
+                );
+            }
+        });
+
+    const result =
+        await assetLoader.loadAll();
+
+    result.loadedAssets.forEach(
+        (value, source) => {
+            state.loadedAssetSources.add(
+                source
             );
         }
     );
+
+    if (result.errors.length > 0) {
+        console.warn(
+            "Alguns assets da batalha não foram carregados:",
+            result.errors
+        );
+    }
 }
+
 
 async function renderBattle(
     battle,
@@ -423,12 +579,8 @@ function updateLeader(battle) {
     player1Card.setBattlePosition("dimmed");
 }
 
-function getDefaultBeyImage(playerId) {
-    if (playerId === "player-1") {
-        return "/themes/prototype/assets/images/player1-bey.png";
-    }
-
-    return "/themes/prototype/assets/images/player2-bey.png";
+function getDefaultBeyImage() {
+    return null;
 }
 
 function setupFullscreen() {

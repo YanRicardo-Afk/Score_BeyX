@@ -1,8 +1,5 @@
-const PrototypeAssets = Object.freeze({
-    images: [
-        "/themes/prototype/assets/images/player1-bey.png",
-        "/themes/prototype/assets/images/player2-bey.png"
-    ],
+const PrototypeBaseAssets = Object.freeze({
+    images: [],
 
     fonts: [],
 
@@ -11,4 +8,44 @@ const PrototypeAssets = Object.freeze({
     videos: []
 });
 
-window.PrototypeAssets = PrototypeAssets;
+function createPrototypeAssets(battle = null) {
+    const images = [];
+
+    if (battle) {
+        const battleImages = [
+            battle.player1?.bey?.image,
+            battle.player2?.bey?.image
+        ];
+
+        battleImages.forEach((image) => {
+            if (
+                image &&
+                !images.includes(image)
+            ) {
+                images.push(image);
+            }
+        });
+    }
+
+    return {
+        images,
+
+        fonts: [
+            ...PrototypeBaseAssets.fonts
+        ],
+
+        audio: [
+            ...PrototypeBaseAssets.audio
+        ],
+
+        videos: [
+            ...PrototypeBaseAssets.videos
+        ]
+    };
+}
+
+window.PrototypeBaseAssets =
+    PrototypeBaseAssets;
+
+window.createPrototypeAssets =
+    createPrototypeAssets;
