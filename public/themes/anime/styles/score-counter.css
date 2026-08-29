@@ -1,0 +1,182 @@
+/* =========================================================
+   MILESTONE 5 — SCORE COUNTER POLISH
+   Adicione ao FINAL de prototype.css
+   ========================================================= */
+
+.score-center {
+    padding:
+        clamp(18px, 3vw, 38px)
+        clamp(8px, 1.6vw, 24px);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.score-line {
+    position: relative;
+    isolation: isolate;
+}
+
+.score-line::before {
+    content: "";
+    position: absolute;
+    z-index: -1;
+    inset:
+        clamp(-20px, -2vw, -10px)
+        clamp(-24px, -2.5vw, -12px);
+    opacity: 0.56;
+    background:
+        radial-gradient(
+            ellipse at center,
+            rgba(123, 235, 255, 0.2),
+            transparent 68%
+        );
+    filter: blur(14px);
+}
+
+.score-number {
+    position: relative;
+    display: inline-grid;
+    place-items: center;
+    min-width: 0.78em;
+    perspective: 700px;
+    transform-style: preserve-3d;
+}
+
+.score-number::before,
+.score-number::after {
+    content: "";
+    position: absolute;
+    left: 10%;
+    width: 80%;
+    height: 1px;
+    opacity: 0;
+    background:
+        linear-gradient(
+            90deg,
+            transparent,
+            rgba(137, 240, 255, 0.9),
+            transparent
+        );
+    transition: opacity 180ms ease;
+}
+
+.score-number::before {
+    top: 7%;
+}
+
+.score-number::after {
+    bottom: 7%;
+}
+
+.score-number.is-changing {
+    animation:
+        score-panel-flip
+        620ms
+        cubic-bezier(.2, .72, .22, 1)
+        both;
+}
+
+.score-number.is-changing::before,
+.score-number.is-changing::after {
+    opacity: 1;
+}
+
+.score-number.has-changed {
+    animation:
+        score-impact
+        360ms
+        cubic-bezier(.16, .84, .34, 1)
+        both;
+}
+
+.score-divider {
+    opacity: 0.78;
+    transform:
+        translateY(-0.08em)
+        scaleX(1.18);
+}
+
+@keyframes score-panel-flip {
+    0% {
+        opacity: 1;
+        filter: blur(0);
+        transform:
+            rotateY(0deg)
+            skewY(0deg)
+            scale(1);
+    }
+
+    38% {
+        opacity: 0.35;
+        filter: blur(2px);
+        transform:
+            rotateY(76deg)
+            skewY(-5deg)
+            scale(0.9);
+    }
+
+    49% {
+        opacity: 0;
+        transform:
+            rotateY(92deg)
+            skewY(-8deg)
+            scale(0.84);
+    }
+
+    51% {
+        opacity: 0;
+        transform:
+            rotateY(-92deg)
+            skewY(8deg)
+            scale(0.84);
+    }
+
+    68% {
+        opacity: 0.58;
+        filter: blur(1px);
+        transform:
+            rotateY(-42deg)
+            skewY(3deg)
+            scale(0.94);
+    }
+
+    100% {
+        opacity: 1;
+        filter: blur(0);
+        transform:
+            rotateY(0deg)
+            skewY(0deg)
+            scale(1);
+    }
+}
+
+@keyframes score-impact {
+    0% {
+        text-shadow:
+            0 2px 0 rgba(255, 255, 255, 0.12),
+            0 16px 32px rgba(0, 0, 0, 0.36);
+        transform: scale(1);
+    }
+
+    45% {
+        text-shadow:
+            0 0 14px rgba(130, 240, 255, 0.7),
+            0 0 34px rgba(91, 222, 255, 0.38);
+        transform: scale(1.14);
+    }
+
+    100% {
+        text-shadow:
+            0 2px 0 rgba(255, 255, 255, 0.12),
+            0 16px 32px rgba(0, 0, 0, 0.36);
+        transform: scale(1);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .score-number.is-changing,
+    .score-number.has-changed {
+        animation-duration: 1ms !important;
+    }
+}

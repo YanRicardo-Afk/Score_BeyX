@@ -1,0 +1,820 @@
+/* =========================================================
+   ANIME THEME — BACKGROUND V9
+   PARES ESPELHADOS — ENCONTRO SECO NO CENTRO
+   ========================================================= */
+
+.tech-background {
+    --background-intensity: 1;
+    --flash-intensity: 1.35;
+
+    position: absolute;
+    inset: 0;
+
+    overflow: hidden;
+    isolation: isolate;
+
+    /*
+        V9:
+        fundo mais escuro e mais azulado,
+        com verde profundo concentrado na arena.
+    */
+    background:
+        radial-gradient(
+            ellipse at 50% 43%,
+            rgba(21, 91, 91, 0.34) 0%,
+            rgba(13, 72, 78, 0.30) 28%,
+            rgba(7, 52, 58, 0.24) 52%,
+            rgba(4, 37, 40, 0.18) 72%,
+            transparent 86%
+        ),
+        linear-gradient(
+            180deg,
+            #092d36 0%,
+            #062c32 30%,
+            #062a2a 61%,
+            #041e20 100%
+        );
+}
+
+.tech-background::before,
+.tech-background::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+}
+
+.tech-background::before {
+    z-index: 0;
+
+    opacity:
+        calc(
+            0.68 *
+            var(--background-intensity)
+        );
+
+    background:
+        radial-gradient(
+            ellipse at 50% 28%,
+            rgba(28, 112, 96, 0.25) 0%,
+            rgba(18, 87, 78, 0.16) 34%,
+            transparent 68%
+        );
+
+    filter: blur(20px);
+
+    animation:
+        anime-background-breathe
+        10s
+        ease-in-out
+        infinite;
+}
+
+/*
+    V10 — PAREDE CURVA DA ARENA
+
+    Os arcos são muito sutis: não são um círculo desenhado
+    por cima do HUD. Eles servem apenas para dar ao olho a
+    referência de que os blocos estão sobre uma superfície
+    circular/cilíndrica.
+*/
+.tech-background::after {
+    z-index: 0;
+
+    background:
+        radial-gradient(
+            ellipse 82% 58% at 50% 57%,
+            transparent 0 43%,
+            rgba(55, 151, 101, 0.075) 43.2%,
+            transparent 44.1%,
+            transparent 50.5%,
+            rgba(55, 151, 101, 0.09) 50.8%,
+            transparent 51.8%,
+            transparent 58%,
+            rgba(55, 151, 101, 0.065) 58.3%,
+            transparent 59.3%,
+            transparent 66%,
+            rgba(55, 151, 101, 0.05) 66.3%,
+            transparent 67.2%
+        ),
+        linear-gradient(
+            90deg,
+            rgba(1, 22, 25, 0.24) 0%,
+            transparent 24%,
+            transparent 47%,
+            rgba(45, 129, 101, 0.045) 49%,
+            rgba(66, 155, 113, 0.075) 50%,
+            rgba(45, 129, 101, 0.045) 51%,
+            transparent 53%,
+            transparent 76%,
+            rgba(1, 22, 25, 0.24) 100%
+        );
+}
+
+/* =========================================================
+   BLOCOS
+   ========================================================= */
+
+.tech-shapes {
+    position: absolute;
+    inset: 0;
+
+    z-index: 1;
+
+    overflow: hidden;
+    pointer-events: none;
+}
+
+.tech-shapes::before {
+    content: "";
+
+    position: absolute;
+    top: 3%;
+    bottom: 3%;
+    left: 50%;
+
+    width: 1px;
+
+    background:
+        linear-gradient(
+            180deg,
+            transparent,
+            rgba(128, 230, 179, 0.04) 20%,
+            rgba(146, 243, 190, 0.09) 50%,
+            rgba(128, 230, 179, 0.04) 80%,
+            transparent
+        );
+}
+
+.anime-block {
+    position: absolute;
+    left: 0;
+
+    opacity:
+        calc(
+            var(--block-opacity) *
+            var(--background-intensity)
+        );
+
+    transform-origin: center;
+
+    will-change:
+        transform,
+        opacity;
+}
+
+.anime-block-surface {
+    position: absolute;
+    inset: 0;
+
+    display: block;
+
+    transform-origin:
+        center bottom;
+}
+
+/* =========================================================
+   PARES ESPELHADOS
+   ========================================================= */
+
+/*
+    Os dois blocos do par possuem:
+
+    - mesmo tamanho
+    - mesma altura
+    - mesma velocidade
+    - mesmo atraso
+    - mesma opacidade
+    - mesmo tipo visual
+
+    A única diferença é o lado.
+
+    Resultado:
+    eles se aproximam como reflexos e desaparecem
+    juntos exatamente no centro.
+*/
+
+.anime-mirror-left {
+    animation:
+        anime-mirror-left
+        var(--block-duration)
+        linear
+        infinite;
+}
+
+.anime-mirror-right {
+    animation:
+        anime-mirror-right
+        var(--block-duration)
+        linear
+        infinite;
+}
+
+@keyframes anime-mirror-left {
+    0% {
+        opacity:
+            calc(
+                var(--block-opacity) *
+                var(--background-intensity)
+            );
+
+        transform:
+            translate3d(
+                calc(-100% - 18vw),
+                0,
+                0
+            )
+            scale(var(--block-scale));
+    }
+
+    20%,
+    76% {
+        opacity:
+            calc(
+                var(--block-opacity) *
+                var(--background-intensity)
+            );
+    }
+
+    /* Aproximação simétrica do centro. */
+    42% {
+        transform:
+            translate3d(
+                calc(50vw - 50% - 18vw),
+                calc(var(--arena-curve) * -0.42),
+                0
+            )
+            scale(var(--block-scale));
+    }
+
+    /*
+        Encontro:
+        os dois continuam com o tamanho original.
+    */
+    48% {
+        transform:
+            translate3d(
+                calc(50vw - 50%),
+                calc(var(--arena-curve) * -1),
+                0
+            )
+            scale(var(--block-scale));
+    }
+
+    /*
+        Depois do encontro começa o encolhimento.
+        A escala vai de 1 até praticamente zero.
+    */
+    76% {
+        transform:
+            translate3d(
+                calc(50vw - 50%),
+                calc(var(--arena-curve) * -1),
+                0
+            )
+            scaleX(0.08)
+            scaleY(var(--block-scale));
+    }
+
+    94% {
+        transform:
+            translate3d(
+                calc(50vw - 50%),
+                calc(var(--arena-curve) * -1),
+                0
+            )
+            scaleX(0.015)
+            scaleY(var(--block-scale));
+    }
+
+    99.7% {
+        opacity:
+            calc(
+                var(--block-opacity) *
+                var(--background-intensity)
+            );
+
+        transform:
+            translate3d(
+                calc(50vw - 50%),
+                calc(var(--arena-curve) * -1),
+                0
+            )
+            scaleX(0.001)
+            scaleY(var(--block-scale));
+    }
+
+    100% {
+        opacity: 0;
+
+        transform:
+            translate3d(
+                calc(50vw - 50%),
+                calc(var(--arena-curve) * -1),
+                0
+            )
+            scaleX(0)
+            scaleY(var(--block-scale));
+    }
+}
+
+@keyframes anime-mirror-right {
+    0% {
+        opacity:
+            calc(
+                var(--block-opacity) *
+                var(--background-intensity)
+            );
+
+        transform:
+            translate3d(
+                calc(100vw + 18vw),
+                0,
+                0
+            )
+            scale(var(--block-scale));
+    }
+
+    20%,
+    76% {
+        opacity:
+            calc(
+                var(--block-opacity) *
+                var(--background-intensity)
+            );
+    }
+
+    42% {
+        transform:
+            translate3d(
+                calc(50vw - 50% + 18vw),
+                calc(var(--arena-curve) * -0.42),
+                0
+            )
+            scale(var(--block-scale));
+    }
+
+    /*
+        Os dois lados chegam ao MESMO ponto.
+    */
+    48% {
+        transform:
+            translate3d(
+                calc(50vw - 50%),
+                calc(var(--arena-curve) * -1),
+                0
+            )
+            scale(var(--block-scale));
+    }
+
+    /*
+        Agora os dois blocos sobrepostos encolhem juntos.
+    */
+    76% {
+        transform:
+            translate3d(
+                calc(50vw - 50%),
+                calc(var(--arena-curve) * -1),
+                0
+            )
+            scaleX(0.08)
+            scaleY(var(--block-scale));
+    }
+
+    94% {
+        transform:
+            translate3d(
+                calc(50vw - 50%),
+                calc(var(--arena-curve) * -1),
+                0
+            )
+            scaleX(0.015)
+            scaleY(var(--block-scale));
+    }
+
+    99.7% {
+        opacity:
+            calc(
+                var(--block-opacity) *
+                var(--background-intensity)
+            );
+
+        transform:
+            translate3d(
+                calc(50vw - 50%),
+                calc(var(--arena-curve) * -1),
+                0
+            )
+            scaleX(0.001)
+            scaleY(var(--block-scale));
+    }
+
+    100% {
+        opacity: 0;
+
+        transform:
+            translate3d(
+                calc(50vw - 50%),
+                calc(var(--arena-curve) * -1),
+                0
+            )
+            scaleX(0)
+            scaleY(var(--block-scale));
+    }
+}
+
+/* =========================================================
+   PROFUNDIDADE
+   ========================================================= */
+
+.anime-depth-far {
+    z-index: 1;
+    filter: blur(0.7px);
+}
+
+.anime-depth-mid {
+    z-index: 2;
+    filter: blur(0.2px);
+}
+
+.anime-depth-near {
+    z-index: 3;
+}
+
+/* =========================================================
+   PERSPECTIVA DA PARTE INFERIOR
+   ========================================================= */
+
+/*
+    V10 — A CURVATURA É O CAMINHO, NÃO O FORMATO DO BLOCO.
+
+    O bloco permanece um retângulo perfeito.
+    A sensação de cilindro é criada pelo deslocamento vertical
+    durante o percurso até o centro.
+*/
+.anime-lane-lower
+.anime-block-surface {
+    transform: none;
+}
+
+/* =========================================================
+   TIPOS
+   ========================================================= */
+
+.anime-block-panel {
+    border:
+        1px solid
+        rgba(79, 171, 111, 0.54);
+
+    background:
+        linear-gradient(
+            180deg,
+            rgba(32, 113, 76, 0.68),
+            rgba(18, 76, 58, 0.60)
+        );
+
+    box-shadow:
+        inset 0 0 15px
+        rgba(83, 181, 116, 0.09);
+}
+
+.anime-block-wide {
+    border:
+        1px solid
+        rgba(70, 158, 105, 0.48);
+
+    background:
+        linear-gradient(
+            90deg,
+            rgba(18, 75, 64, 0.58),
+            rgba(42, 128, 82, 0.66),
+            rgba(18, 78, 60, 0.58)
+        );
+}
+
+.anime-block-outline {
+    border:
+        2px solid
+        rgba(82, 174, 111, 0.52);
+
+    background:
+        rgba(31, 108, 73, 0.38);
+
+    box-shadow:
+        inset 0 0 14px
+        rgba(76, 165, 104, 0.10);
+}
+
+.anime-block-thin {
+    border: none;
+
+    background:
+        linear-gradient(
+            90deg,
+            transparent,
+            rgba(63, 157, 101, 0.48) 18%,
+            rgba(82, 180, 113, 0.66) 50%,
+            rgba(48, 137, 88, 0.44) 82%,
+            transparent
+        );
+
+    box-shadow:
+        0 0 8px
+        rgba(57, 151, 99, 0.16);
+}
+
+/* =========================================================
+   LINHAS ESPELHADAS
+   ========================================================= */
+
+.tech-particles {
+    position: absolute;
+    inset: 0;
+
+    z-index: 2;
+
+    overflow: hidden;
+    pointer-events: none;
+}
+
+.anime-streak {
+    position: absolute;
+    left: 0;
+
+    background:
+        linear-gradient(
+            90deg,
+            transparent,
+            rgba(91, 190, 121, 0.58),
+            transparent
+        );
+
+    box-shadow:
+        0 0 7px
+        rgba(65, 160, 101, 0.16);
+}
+
+.anime-streak-left {
+    animation:
+        anime-streak-left
+        var(--particle-duration)
+        linear
+        infinite;
+}
+
+.anime-streak-right {
+    animation:
+        anime-streak-right
+        var(--particle-duration)
+        linear
+        infinite;
+}
+
+@keyframes anime-streak-left {
+    0% {
+        opacity: 0;
+        transform: translate3d(-20vw, 0, 0);
+    }
+
+    14%,
+    82% {
+        opacity: var(--particle-opacity);
+    }
+
+    100% {
+        opacity: 0;
+        transform: translate3d(50vw, 0, 0);
+    }
+}
+
+@keyframes anime-streak-right {
+    0% {
+        opacity: 0;
+        transform: translate3d(120vw, 0, 0);
+    }
+
+    14%,
+    82% {
+        opacity: var(--particle-opacity);
+    }
+
+    100% {
+        opacity: 0;
+        transform: translate3d(50vw, 0, 0);
+    }
+}
+
+/* =========================================================
+   GRID / PISO
+   ========================================================= */
+
+.tech-grid {
+    position: absolute;
+
+    z-index: 0;
+
+    left: -12%;
+    right: -12%;
+
+    bottom: -24%;
+
+    height: 58%;
+
+    opacity:
+        calc(
+            0.18 *
+            var(--background-intensity)
+        );
+
+    transform:
+        perspective(620px)
+        rotateX(66deg)
+        scaleX(1.28);
+
+    transform-origin:
+        center bottom;
+
+    background:
+        repeating-linear-gradient(
+            90deg,
+            rgba(55, 150, 94, 0.13)
+            0 2px,
+            transparent
+            2px 90px
+        ),
+        repeating-linear-gradient(
+            0deg,
+            rgba(48, 137, 88, 0.11)
+            0 2px,
+            transparent
+            2px 58px
+        );
+
+    mask-image:
+        linear-gradient(
+            to top,
+            rgba(0, 0, 0, 0.9),
+            rgba(0, 0, 0, 0.42) 56%,
+            transparent 100%
+        );
+
+    animation:
+        anime-grid-motion
+        3.8s
+        linear
+        infinite;
+}
+
+@keyframes anime-grid-motion {
+    from {
+        background-position:
+            0 0,
+            0 0;
+    }
+
+    to {
+        background-position:
+            90px 0,
+            0 58px;
+    }
+}
+
+/* =========================================================
+   VINHETA
+   ========================================================= */
+
+.screen-vignette {
+    position: absolute;
+    inset: 0;
+
+    z-index: 4;
+
+    pointer-events: none;
+
+    background:
+        radial-gradient(
+            ellipse at center,
+            transparent 38%,
+            rgba(2, 21, 29, 0.12) 67%,
+            rgba(1, 14, 22, 0.48) 100%
+        );
+}
+
+/* =========================================================
+   RESPIRAÇÃO
+   ========================================================= */
+
+@keyframes anime-background-breathe {
+    0%,
+    100% {
+        opacity:
+            calc(
+                0.58 *
+                var(--background-intensity)
+            );
+
+        transform: scale(0.98);
+    }
+
+    50% {
+        opacity:
+            calc(
+                0.76 *
+                var(--background-intensity)
+            );
+
+        transform: scale(1.02);
+    }
+}
+
+/* =========================================================
+   FLASH
+   ========================================================= */
+
+.tech-background.is-flashing::before {
+    animation:
+        anime-background-finish-flash
+        700ms
+        cubic-bezier(.16, .84, .26, 1)
+        both;
+}
+
+.tech-background.is-flashing
+.anime-block-surface {
+    filter:
+        brightness(
+            calc(
+                1 +
+                (
+                    var(--flash-intensity) *
+                    0.18
+                )
+            )
+        );
+}
+
+@keyframes anime-background-finish-flash {
+    0% {
+        opacity:
+            calc(
+                0.62 *
+                var(--background-intensity)
+            );
+
+        transform: scale(1);
+    }
+
+    20% {
+        opacity:
+            calc(
+                0.98 *
+                var(--flash-intensity)
+            );
+
+        filter: blur(7px);
+        transform: scale(1.07);
+    }
+
+    100% {
+        opacity:
+            calc(
+                0.62 *
+                var(--background-intensity)
+            );
+
+        filter: blur(18px);
+        transform: scale(1);
+    }
+}
+
+/* =========================================================
+   MOBILE
+   ========================================================= */
+
+@media (max-width: 650px) {
+    .anime-depth-far:nth-child(2n) {
+        display: none;
+    }
+
+    .anime-streak:nth-child(2n) {
+        display: none;
+    }
+
+    .tech-grid {
+        height: 50%;
+        bottom: -15%;
+    }
+}
+
+/* =========================================================
+   REDUCED MOTION
+   ========================================================= */
+
+@media (prefers-reduced-motion: reduce) {
+    .anime-block,
+    .anime-streak,
+    .tech-grid,
+    .tech-background::before {
+        animation: none !important;
+    }
+}
